@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // Restore an explicit night preference before paint; otherwise default to day.
+    try {
+      if (localStorage.getItem('physics-quest-theme-v1') === 'night') {
+        document.documentElement.setAttribute('data-theme', 'night');
+      }
+    } catch (_) { /* Storage may be unavailable; the default day theme is usable. */ }
+  </script>
+  <title>Physics Quest · 四大力学探索实验室</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=283cb156c878">
+  <link rel="stylesheet" href="assets/css/course-map.css?v=43fb7654e492">
+</head>
+<body>
+<!-- Decorative landscape only: no scientific data or interactive controls. -->
+<div class="day-scene" aria-hidden="true">
+  <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" focusable="false">
+    <defs>
+      <linearGradient id="waveMist" x2="0" y2="1"><stop stop-color="#b6d5ba" stop-opacity=".12"/><stop offset="1" stop-color="#80b397" stop-opacity=".38"/></linearGradient>
+      <radialGradient id="galaxyMist"><stop stop-color="#81ae91" stop-opacity=".3"/><stop offset="1" stop-color="#81ae91" stop-opacity="0"/></radialGradient>
+    </defs>
+    <g class="landscape-wave wave-far">
+      <path d="M-160 210 C170 40 420 400 770 215 S1280 50 1770 240 L1770 490 C1300 315 1050 530 710 400 S160 275-160 450Z" fill="#b5d2b3" opacity=".32"/>
+      <path d="M-180 470 C180 260 430 660 830 460 S1350 390 1790 510 L1790 780 C1340 550 1040 810 620 630 S90 580-180 720Z" fill="url(#waveMist)"/>
+    </g>
+    <g class="landscape-wave wave-near">
+      <path d="M-190 815 C110 600 440 975 800 755 S1320 750 1780 670 L1780 1170 H-190Z" fill="#91ba9a" opacity=".26"/>
+      <path d="M-180 925 C250 710 460 1080 930 865 S1400 840 1790 805 L1790 1170 H-180Z" fill="#75a58a" opacity=".16"/>
+      <path d="M-160 810 C220 645 490 940 850 775 S1390 785 1760 680" fill="none" stroke="#7aa98b" stroke-width="2" opacity=".25"/>
+    </g>
+    <!-- Orbit / pendulum: mechanics. -->
+    <g class="scene-float float-orbit" transform="translate(172 230)">
+      <g fill="none" stroke="#6c9e80" stroke-width="2" opacity=".3">
+        <ellipse rx="100" ry="42" transform="rotate(-30)"/><ellipse rx="56" ry="90" transform="rotate(-30)"/>
+        <path d="M0-72V30L45 96 M-22-72H22"/><circle cx="45" cy="96" r="12" fill="#8bb79a"/>
+      </g>
+      <circle r="8" fill="#7da88b" opacity=".35"/>
+    </g>
+    <!-- Spiral galaxy, soft mist, and a distant star. -->
+    <g class="scene-float float-galaxy" transform="translate(1350 175)">
+      <ellipse rx="230" ry="145" fill="url(#galaxyMist)"/>
+      <g fill="none" stroke="#679779" opacity=".32" transform="rotate(-24)">
+        <ellipse rx="125" ry="48" stroke-width="1.5"/>
+        <path d="M-130 26 C-112-52 70-74 97-5 S-42 61-61 7 26-34 36-2-13 21-16 0" stroke-width="12" opacity=".4"/>
+        <path d="M130-26 C112 52-70 74-97 5 S42-61 61-7-26 34-36 2 13-21 16 0" stroke-width="5" opacity=".5"/>
+      </g>
+      <circle r="9" fill="#88ad87" opacity=".4"/>
+      <path d="M153-90V-62 M139-76H167" stroke="#6d9e80" stroke-width="2" opacity=".5"/>
+    </g>
+    <!-- Particle ensemble: statistical physics. -->
+    <g class="scene-float float-particles" transform="translate(1460 540)" fill="#6d9f81" opacity=".25">
+      <circle cx="-45" cy="-32" r="5"/><circle cx="-13" cy="-48" r="3"/><circle cx="21" cy="-22" r="7"/>
+      <circle cx="-29" cy="12" r="7"/><circle cx="14" cy="23" r="4"/><circle cx="47" cy="7" r="5"/>
+      <circle cx="-4" cy="64" r="6"/><circle cx="-57" cy="53" r="3"/><circle cx="59" cy="57" r="4"/>
+    </g>
+    <!-- Field / wave packet: electrodynamics and quantum mechanics. -->
+    <g class="scene-float float-wave" transform="translate(1050 885)" fill="none" stroke="#609477" opacity=".32">
+      <path d="M-190 0 C-150 0-147-8-132-8 S-112 23-95 23-78-54-59-54-40 85-20 85 0-98 20-98 40 75 60 75 78-40 95-40 115 14 133 14 155 0 190 0" stroke-width="3"/>
+      <ellipse rx="210" ry="43" stroke-width="1" transform="rotate(-8)"/>
+    </g>
+    <!-- Forest silhouettes on the foreground swell. -->
+    <g class="scene-float float-forest" transform="translate(335 842)" fill="#72a082" opacity=".28">
+      <path d="M-100 15-74-38-48 15H-60L-38 43H-110L-88 15Z M-35 28 0-59 35 28H20L48 65H-48L-20 28Z M38 32 62-26 86 32H76L98 58H26L48 32Z"/>
+      <path d="M-77 32H-71V70H-77Z M-4 45H4V89H-4Z M59 47H65V85H59Z"/>
+    </g>
+  </svg>
+</div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">Φ</div><div><strong>Physics Quest</strong><span>研究生四大力学 · 课程地图预览</span></div></div>
+    <div class="sidebar-label">学习地图</div>
+    <nav id="courseNav" aria-label="选择学科"></nav>
+    <div class="sidebar-bottom">
+      <div class="progress-label"><span>已开放示范题进度</span><strong id="progressText">0 / 35</strong></div>
+      <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+      <div class="xp">✦ <span id="xpText">0</span> XP · 每关两项核心挑战</div>
+      <button id="exportBtn" class="ghost wide">导出 Markdown 学习记录</button>
+      <button id="resetBtn" class="text-button">清空本地进度</button>
+      <p class="privacy">进度仅保存在本机浏览器。外部模拟通过官方页面打开。</p>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><span class="eyebrow">探索 · 预测 · 推导</span><div class="topbar-actions"><span class="status">● 离线核心功能可用</span><button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="true" aria-label="切换到夜间模式"><span id="themeIcon" aria-hidden="true">☀</span><span id="themeLabel">日间模式</span></button></div></header>
+    <div class="content">
+      <div class="hero"><div id="subjectTag" class="pill">理论力学</div><h1 id="lessonTitle" tabindex="-1">从单摆到拉格朗日方程</h1><p id="lessonIntro"></p></div>
+      <section id="electroTools" class="electro-tools" aria-label="电动力学视图" hidden>
+        <div class="electro-view-buttons" role="tablist" aria-label="电动力学内容"><button id="mapViewBtn" class="electro-tab" type="button" role="tab" aria-controls="electroMap" aria-selected="false" tabindex="-1">课程地图</button><button id="demoViewBtn" class="electro-tab" type="button" role="tab" aria-controls="lessonLayout" aria-selected="false" tabindex="-1">交互示范</button><button id="glossaryViewBtn" class="electro-tab" type="button" role="tab" aria-controls="electroGlossary" aria-selected="false" tabindex="-1">核心概念中英对照</button></div>
+      </section>
+      <section id="electroMap" class="course-map" role="tabpanel" aria-labelledby="mapViewBtn" tabindex="0" hidden></section>
+      <section id="electroGlossary" class="panel electro-glossary" role="tabpanel" aria-labelledby="glossaryViewBtn" tabindex="0" hidden></section>
+      <div id="lessonLayout" class="layout" role="region" aria-labelledby="lessonTitle" tabindex="0">
+        <section class="primary">
+          <div class="panel sim-panel">
+            <div class="panel-heading"><div><span class="section-no">01 / 探索</span><h2 id="simTitle" tabindex="-1">可调物理模型</h2></div><span class="small-chip">真实公式 · 可视化</span></div>
+            <canvas id="simCanvas" width="800" height="330" role="img" aria-label="物理参数的交互可视化"></canvas>
+            <div id="controls" class="controls"></div>
+            <div id="metrics" class="metrics" aria-live="polite"></div>
+            <div id="fieldTable" class="field-table" hidden></div>
+            <p id="modelNote" class="model-note"></p>
+          </div>
+          <div class="panel question-panel"><div class="panel-heading"><div><span class="section-no">02 / 预测</span><h2>先判断，再验证</h2></div><span id="predictBadge" class="badge">待完成</span></div>
+            <p id="predictionQuestion" class="question"></p><div id="predictionOptions" class="option-grid"></div><div id="predictionFeedback" class="feedback" aria-live="polite"></div>
+          </div>
+          <div class="panel question-panel"><div class="panel-heading"><div><span class="section-no">03 / 关键推导</span><h2>只练最值得掌握的一步</h2></div><span id="deriveBadge" class="badge">待完成</span></div>
+            <div id="derivation" class="derivation"></div><p id="deriveQuestion" class="question"></p><div id="deriveOptions" class="option-grid"></div><div id="deriveFeedback" class="feedback" aria-live="polite"></div>
+          </div>
+        </section>
+        <aside class="rightcol">
+          <div class="panel info-panel"><span class="section-no">本关目标</span><h3>物理图景优先</h3><p id="goalText"></p><div class="divider"></div><span class="section-no">必须掌握</span><p id="mathText"></p></div>
+          <div class="panel info-panel"><span class="section-no">延伸学习资源</span><h3 id="resourceTitle"></h3><p id="resourceDescription"></p><a id="resourceLink" class="link-button" target="_blank" rel="noopener noreferrer">打开官方学习资源 ↗</a><p class="source-note">官方站点独立打开；本项目不复制或改造第三方模拟。</p></div>
+          <div class="panel info-panel"><span class="section-no">学习反思</span><h3>用自己的话解释</h3><p id="reflectionPrompt"></p><textarea id="reflection" rows="5" placeholder="记录直觉、推导思路、仍不清楚的地方……"></textarea><button id="saveNoteBtn" class="ghost wide">保存本关笔记</button><span id="savedIndicator" class="save-indicator"></span></div>
+          <div class="panel info-panel help"><span class="section-no">如何使用</span><p>① 先读预测题，记下判断；② 调参数观察；③ 展开关键推导；④ 完成两道示范题；⑤ 导出 Markdown 到 Obsidian。示范页目前可自由进入，不设先修锁定。</p></div>
+        </aside>
+      </div>
+      <footer>Physics Quest · 本地优先的学习原型 · 教学模型有明确近似条件，不替代完整数值实验。</footer>
+    </div>
+  </main>
+</div>
+<script src="assets/js/physics/physics.js?v=14f30f302b09"></script>
+<script src="assets/js/data/electrodynamics-curriculum.js?v=a5fb070ddd1b"></script>
+<script src="assets/js/data/electrodynamics-glossary.js?v=2b5b63cc16e0"></script>
+<script src="assets/js/lessons/ed1-lessons.js?v=623342e00760"></script>
+<script src="assets/js/renderers/ed1-renderer.js?v=bbcc48a2f342"></script>
+<script src="assets/js/physics/ed2-physics.js?v=33f0e770303d"></script>
+<script src="assets/js/lessons/ed2-lessons.js?v=6f3c75de0215"></script>
+<script src="assets/js/renderers/ed2-renderer.js?v=93bf0b0c8066"></script>
+<script src="assets/js/physics/ed3-physics.js?v=cab4e14b34b0"></script>
+<script src="assets/js/lessons/ed3-lessons.js?v=d6228993bb51"></script>
+<script src="assets/js/renderers/ed3-renderer.js?v=b4171ed43c95"></script>
+<script src="assets/js/physics/ed4-physics.js?v=cecb29c95b34"></script>
+<script src="assets/js/lessons/ed4-lessons.js?v=0b535aa77c91"></script>
+<script src="assets/js/renderers/ed4-renderer.js?v=fab56761fbe6"></script>
+<script src="assets/js/physics/ed5-physics.js?v=c586c2595469"></script>
+<script src="assets/js/lessons/ed5-lessons.js?v=d458e24e7250"></script>
+<script src="assets/js/renderers/ed5-renderer.js?v=e007fc55345f"></script>
+<script src="assets/js/physics/ed6-physics.js?v=bc6018751ef6"></script>
+<script src="assets/js/lessons/ed6-lessons.js?v=646db3a330c6"></script>
+<script src="assets/js/renderers/ed6-renderer.js?v=c347a8120caf"></script>
+<script src="assets/js/physics/ed7-physics.js?v=57bcd19730d0"></script>
+<script src="assets/js/lessons/ed7-lessons.js?v=fe75a778ac32"></script>
+<script src="assets/js/renderers/ed7-renderer.js?v=b1931d09748c"></script>
+<script src="assets/js/physics/ed8-physics.js?v=3b9ed7ab03a2"></script>
+<script src="assets/js/lessons/ed8-lessons.js?v=c79285729083"></script>
+<script src="assets/js/renderers/ed8-renderer.js?v=e56feadeeff0"></script>
+<script src="assets/js/course-map.js?v=39afa2158b42"></script>
+<script src="assets/js/app.js?v=2cf92fb246b3"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# macOS folder metadata.
+.DS_Store
+
+# Development-only material must stay out of the public release.
+/internal/
+/previews/
+
+# Also exclude legacy root-level copies.
+/Physics_Quest_status.md
+/ROADMAP.md
+/preview.png
+/preview_mobile.png
+/preview_electrodynamics.png

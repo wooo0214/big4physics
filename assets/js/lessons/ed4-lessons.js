@@ -1,0 +1,52 @@
+/* ED4: distinguish prescribed response, constitutive law and free-source jumps. */
+(function(root,factory){const lessons=factory();if(typeof module==='object'&&module.exports)module.exports=lessons;root.ED4Lessons=lessons;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+  const slider=(id,label,min,max,step,value,unit)=>({id,label,min,max,step,value,unit});
+  const common={courseId:'electro',resourceTitle:'麻省理工学院开放课程 · 电磁学Ⅱ讲义目录',resourceDescription:'沿用课程地图中的官方教材入口；宏观场模型在本地计算。',resourceUrl:'https://ocw.mit.edu/courses/8-07-electromagnetism-ii-fall-2012/pages/lecture-notes/'};
+  return [
+    {...common,id:'ED4.1',short:'电动力学 · ED4.1',title:'极化与束缚电荷',
+      intro:"中性材料为什么还能改变电场？把极化看成偶极矩密度，检查哪些束缚电荷留在表面。",simTitle:'同一 P，六个外法向：表面电荷如何分配？',
+      controls:[slider('polarization','有符号极化幅度 P₀',-5,5,.5,3,'μC/m²'),slider('angle','P₀ 方向与 +z 夹角 θ',0,180,5,40,'°')],
+      goal:'分清内部体电荷与界面表面电荷；用相对法向方向判断 σb 的符号，并检验中性。',
+      math:'P=P₀(sinθ,0,cosθ)；ρb=−∇·P；σb=P·n̂。',
+      modelNote:'边长 1 m 的立方体内预设均匀 P，外部 P=0；不自动用 εE 求 P，也不求有限立方体的自洽电场。n̂ 是材料外法向。ρb=0 只指开区间内部，界面不连续的贡献用 σb 单独计入。每面面积 1 m²，六面电荷求和应为零。图为 xz 截面和六面数值，不代表微观偶极密度或完整三维电场；无平滑。',
+      graduate:{"task":"把有限极化体写成全空间的分布场，解释体电荷与表面电荷如何统一。","check":"将 P 在材料外延为零，对 −∇·P 求分布导数会产生边界的 P·n 面项。不能既把面项留在体积分中又另加一次表面电荷。"},
+      reflection:'均匀 P 为何仍能产生表面电荷？如果只计算内部散度而忽略界面，会漏掉什么？总束缚电荷为零是否意味着外部没有电场？',
+      prediction:{q:'均匀非零 P 沿 +z，哪一项正确？',options:['体束缚电荷非零，所有表面都无电荷','内部 ρb=0，上表面正、下表面负，净束缚电荷为零','内部和全部表面都无束缚电荷'],correct:1,explain:'内部 ∇·P=0，但上下表面 P·n̂ 分别为 +P、−P；侧面法向与 P 垂直。'},
+      derivation:"<p><b>物理问题</b>　极化体内部的相邻偶极端电荷可抵消，材料表面却会留下未抵消的电荷。</p><p><b>列式理由</b>　用偶极矩密度 P 描述响应，体电荷取 ρb=−∇·P，表面电荷取 σb=P·n̂，n̂ 朝材料外。</p><p><b>关键一步</b>　本关 P 均匀，内部 ρb=0；相对两面的法向相反，表面电荷逐对抵消，∫ρb dV+∮σb dS=0。</p><p><b>极限检验</b>　P→0 时束缚电荷消失；P 与某面相切时该面 σb=0。净电荷为零仍可有偶极场，不能据此推断无场。</p>",
+      derive:{q:'材料表面束缚电荷的符号由哪个量确定？',options:['P·外法向 n̂','|P×n̂|','P 的模长，与法向无关'],correct:0,explain:'σb=P·n̂。法向朝外，点积含正负；不能用矢量模长替代。'}},
+    {...common,id:'ED4.2',short:'电动力学 · ED4.2',title:'D 场、电容与电源',
+      intro:"插入相同介质，为何场能有时下降、有时上升？先说明固定 Q 还是 V，再把电源纳入能量账目。",simTitle:'相同 εr，两种约束：能量流向不同',
+      controls:[{id:'mode',type:'select',label:'插入过程约束',value:0,options:[{value:0,label:'断开电源：固定 Q₀=C₀V₀'},{value:1,label:'连接理想电源：固定 V₀'}]},slider('epsilon','相对介电常数 εr',1,8,.5,3,''),slider('voltage','真空初态 / 电源 V₀',0,200,10,100,'V')],
+      goal:'在固定 Q/V 下分别比较 E、D 和 U；固定 V 时把电源做功纳入能量账目，避免只看场能。',
+      math:'D=ε₀E+P；C=εA/d；U=Q²/(2C)=CV²/2；ΔU+W机械输出=W电源输入。',
+      modelNote:'无损、均匀、各向同性线性介质完全填满平行板，A=0.02 m²、d=0.005 m，忽略边缘场。各 εr 结果是从真空 εr=1 初态准静态可逆插入后的终态；滑块不是运动轨迹，未求部分插入时的力。固定 Q 的 Q₀=C₀V₀；固定 V 的 W电源=V₀(Q−Q₀)。机械功为场对外输出，不是仅由 ΔU 判定；不含介质耗散。P 沿 E，正极板自由面电荷为 D。无平滑。',
+      graduate:{"task":"对一般电容增量 dC 写微分能量平衡，分别推导固定 Q 和固定 V 的机械输出。","check":"固定 Q：dW机械=Q²dC/(2C²)；固定 V：dW机械=V²dC/2。固定 V 时电源输入 VdQ=V²dC；若要求实际插入力，还需 C 随插入位置的函数。"},
+      reflection:'为什么固定 V 时场能增加，介质仍可被吸入？电源提供的能量如何分为场能和机械功？固定 Q 时 D 与 E 是否一起减小？',
+      prediction:{q:'V₀>0，固定 V 完全填入 εr>1 的介质，E 与 U 怎样变？',options:['E 减小、U 减小','E 不变、U 增加，电源提供能量','E 和 U 都不变'],correct:1,explain:'E=V₀/d 不变，C 增大使 U=CV₀²/2 增加。电源供能 V₀ΔQ，其中一半增加场能，一半成为可逆机械输出。'},
+      derivation:"<p><b>物理问题</b>　介质改变电容，但场与能量怎样变化取决于外部约束；接通电源时还会交换电荷。</p><p><b>列式理由</b>　D=ε₀E+P；线性各向同性时 D=εE。平行板完全填充后 C=εrC₀，用 U=Q²/(2C)=CV²/2。</p><p><b>关键一步</b>　固定 Q：E、U 降为 1/εr。固定 V：E 不变、U 增为 εr 倍，电源输入 VΔQ=2ΔU，机械输出为 ΔU。</p><p><b>极限检验</b>　εr→1 时恢复真空，三项能量变化归零；两种约束都满足 ΔU+W机械输出=W电源输入。终态能量差不是一般插入力。</p>",
+      derive:{q:'固定非零 V，可逆插入使电容增加 ΔC>0，电源做功是多少？',options:['½V²ΔC','0','V²ΔC，其中一半增加场能'],correct:2,explain:'W电源=∫V dQ=VΔQ=V²ΔC，而 ΔU=½V²ΔC。其余能量是准静态机械输出。'}},
+    {...common,id:'ED4.3',short:'电动力学 · ED4.3',title:'磁化、束缚电流与 H',
+      intro:"磁化体怎样等效为电流？先求束缚源，再在指定薄板几何中区分外加 H 与内部总 H。",simTitle:'均匀磁化薄板：体电流为零，表面电流可非零',
+      controls:[slider('magnetization','有符号磁化幅度 M₀',-5,5,.5,3,'A/m'),slider('angle','M₀ 方向与 +z 夹角 θ',0,180,5,50,'°'),slider('external','外加 H₀,z',-5,5,.5,1,'A/m')],
+      goal:'用 M×n̂ 核验两面电流方向；在指定几何中计入 H退磁，避免把外加 H₀ 直接当内部 H。',
+      math:'Jb=∇×M；Kb=M×n̂；H=B/μ₀−M；H内=(H₀−Mz)ẑ。',
+      modelNote:'xy 方向无限、表面 z=±0.5 m 的静态薄板，内部预设均匀 M=M₀(sinθ,0,cosθ)，外部 M=0；不是由线性 μ 自动求 M 的材料模型。自由源在远处产生均匀 H₀ẑ，本地界面无自由面电流。包含此几何的退磁场 H退磁=−Mzẑ；B内=μ₀(Mx x̂+H₀ẑ)，B外=μ₀H₀ẑ。图为 xz 截面（x 向右、z 向上），⊗ 为 +y 入屏、⊙ 为 −y 出屏；上表面 Kb,y=−Mx，下表面相反。无平滑。',
+      graduate:{"task":"对本页无限薄板改用线性磁化率求自洽响应，比较切向和法向分量。","check":"若 M=χmH，法向有 Hz=H₀−Mz，故 Hz=H₀/(1+χm)、Mz=χmH₀/(1+χm)。本页外场没有切向分量，线性各向同性自洽解还要求 Mx=0；原模型预设 M，不能解释为自动满足该材料关系。"},
+      reflection:'M 沿法向时 Kb=0，为何内部 H 仍可非零？为什么不能在所有形状下都用 H退磁=−Mzẑ？把 H=0 当成无自由电流的必然结论错在哪里？',
+      prediction:{q:'均匀 M=Mx x̂（Mx>0），薄板上表面的外法向为 +z，Kb 指向哪里？',options:['+y','−y','+z'],correct:1,explain:'Kb=M×n̂=Mx(x̂×ẑ)=−Mxŷ；下表面法向反向，电流也反向。内部均匀 M 的体旋度为零。'},
+      derivation:"<p><b>物理问题</b>　均匀磁化也可在表面留下环流；H 把自由电流与材料的束缚电流分开。</p><p><b>列式理由</b>　Jb=∇×M、Kb=M×n̂。定义 H=B/μ₀−M 后，静磁安培定律成为 ∇×H=J自由。</p><p><b>关键一步</b>　无限薄板的退磁场为 −Mzẑ，因此 H内=(H₀−Mz)ẑ、B内=μ₀(Mx x̂+H₀ẑ)；上下表面 Kb 方向相反。</p><p><b>极限检验</b>　M→0 时 B=μ₀H₀ẑ；M 纯法向时 Kb=0，H内仍可非零。无自由电流不等于 H=0，此退磁式也不适用于任意形状。</p>",
+      derive:{q:'定义 H 后，静磁宏观安培定律的右侧是哪一种电流？',options:['自由电流 J自由','自由加束缚的总电流','只有束缚电流 ∇×M'],correct:0,explain:'束缚体电流被移入 M，故 ∇×H=J自由；∇×B=μ₀(J自由+Jb) 仍描述总电流。'}},
+    {...common,id:'ED4.4',short:'电动力学 · ED4.4',title:'宏观界面与本构边界',
+      intro:"两种介质接触时，哪些场连续？先让自由面源决定跳跃，再用本构关系求另一侧分量。",simTitle:'n=+z 的静态界面：D、B、E、H 各管什么？',
+      controls:[slider('epsilon1','区域 1：εr₁',1,6,1,2,''),slider('epsilon2','区域 2：εr₂',1,8,1,4,''),slider('mu1','区域 1：μr₁',1,4,1,1,''),slider('mu2','区域 2：μr₂',1,4,1,2,''),slider('sigma','自由面电荷 σf',-2,2,.2,.6,'nC/m²'),slider('current','自由面电流 Kf,x',-.5,.5,.1,.3,'A/m')],
+      goal:'通过自由面源匹配 Dn 和 Ht，通过静态场方程匹配 Et 和 Bn；不要把 ε、μ 的改变误认为所有场都连续。',
+      math:'ΔDz=σf；ΔHy=−Kf,x；ΔEx=0；ΔBz=0；D=εE，B=μH。',
+      modelNote:'静态、平面 z=0，区域 1 为 z<0，区域 2 为 z>0，n=+z；两侧为正实标量 ε、μ 的均匀线性各向同性介质。规定区域 1 Ex=Ez=100 V/m、Hy=0.2 A/m、Bz=1 μT，其余分量为零；解出区域 2。K自由=Kf,x x̂，σf 单位 nC/m²。表示局部两侧极限，不定义薄面自场，也不要求全空间无穷远衰减；忽略额外偶极面层。箭头共同比例仅用于同一种场的两侧比较，不混比 E 与 H。无平滑。',
+      graduate:{"task":"由本构关系推得无自由面源时 En 与 Bt 的跳跃，并说明各向异性时怎样处理。","check":"标量正实 ε、μ 下 ε₂E₂n=ε₁E₁n、B₂t/μ₂=B₁t/μ₁。张量本构会耦合分量，须联合解边界条件，不能逐分量除以标量。"},
+      reflection:'无自由面源时，为何 En 与 Bt 仍可跳变？若把 n 反过来，区域编号和跳跃式要怎样同步改变？哪些介质不能用标量 ε、μ 描述？',
+      prediction:{q:'σf=0、K自由=0，且两侧 ε、μ 不同，哪组分量必须连续？',options:['所有 E、B 分量','En、Bt','Dn、Bn、Et、Ht'],correct:2,explain:'四个静态边界条件分别来自 D 的高斯定律、无磁荷、法拉第定律和 H 的安培定律。本构不同可使 En、Bt 跳跃。'},
+      derivation:"<p><b>物理问题</b>　介质改变并不要求 E、B 的所有分量连续；要先分清法向、切向及自由源。</p><p><b>列式理由</b>　固定 n=+z、Δ=区域2−区域1。跨界薄柱和静态小环路分别给 ΔDn=σf、ΔBn=0、ΔEt=0、n×ΔH=Kf。</p><p><b>关键一步</b>　Kf=Kx x̂ 时 ΔHy=−Kx；标量本构给 E₂z=(ε₁E₁z+σf)/ε₂，再由 B=μH 求磁场。</p><p><b>极限检验</b>　无自由面源时连续的是 Dn、Bn、Et、Ht，En、Bt 仍可跳变；两侧 ε、μ 相同且无面源时全部场分量连续。</p>",
+      derive:{q:'n=+z、K自由=Kx x̂，正确的切向磁场跳跃式是？',options:['H₂y−H₁y=−Kx','B₂y−B₁y=−Kx','H₂y−H₁y=+Kx'],correct:0,explain:'ẑ×(ΔHyŷ)=−ΔHy x̂=Kx x̂，所以 ΔHy=−Kx。B 的跳跃还与两侧 μ 和束缚响应有关。'}}
+  ];
+});
