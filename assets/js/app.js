@@ -50,7 +50,7 @@
     },
     {
       id:'quantum',short:'量子力学',icon:'ψ',title:'从驻波到量子化能级',
-      intro:'在无限深势阱中改变量子数和阱宽，直接观察波函数节点、概率密度与能量之间的关系。',
+      intro:'设想你把一个电子限制在一维盒子中：盒内势能取零，两端的势垒无限高。这个盒子中的电子，即使处于能量最低的状态，其动能也不为零。为什么限制电子活动的空间，会使它无法具有零动能？先选 n=1，改变阱宽，观察最低能量如何变化；再增加量子数，比较波函数节点、概率密度与能量。',
       simTitle:'一维无限深势阱：波函数与 |ψ|²',
       controls:[{id:'n',label:'量子数 n',min:1,max:5,step:1,value:2,unit:''},{id:'L',label:'势阱宽度 L',min:.5,max:3,step:.1,value:1,unit:'nm'}],
       goal:'把边界条件、驻波波长、节点数和离散能级联系起来；区分波函数振幅与测量概率密度。',
@@ -64,12 +64,32 @@
       derive:{q:'固定粒子质量与量子数 n，将势阱宽度从 L 增加到 2L，能量 Eₙ 如何变化？',options:['变为原来的 1/2','变为原来的 1/4','变为原来的 2 倍'],correct:1,explain:'Eₙ∝1/L²，故 L→2L 时 Eₙ→Eₙ/4。'}
     }
   ];
+  // Upgrade the original well in place: one lesson, one legacy progress key.
+  const legacyQuantum=levels.find(l=>l.id==='quantum');
+  const originalQuantumIntro=legacyQuantum.intro;
+  Object.assign(legacyQuantum,window.QM1Lessons[0],{intro:originalQuantumIntro});
+  levels.push(...window.QM1Lessons.slice(1),...window.QM2Lessons,...window.QM3Lessons,...window.QM4Lessons,...window.QM5Lessons,...window.QM6Lessons,...window.QM7Lessons,...window.QM8Lessons);
   levels.push(...window.ED1Lessons,...window.ED2Lessons,...window.ED3Lessons,...window.ED4Lessons,...window.ED5Lessons,...window.ED6Lessons,...window.ED7Lessons,...window.ED8Lessons);
-  const renderer=id=>({'ED2':window.ED2Renderer,'ED3':window.ED3Renderer,'ED4':window.ED4Renderer,'ED5':window.ED5Renderer,'ED6':window.ED6Renderer,'ED7':window.ED7Renderer,'ED8':window.ED8Renderer}[id.split('.')[0]]||window.ED1Renderer);
-  const modelAPI=id=>({'ED2':window.ED2Physics,'ED3':window.ED3Physics,'ED4':window.ED4Physics,'ED5':window.ED5Physics,'ED6':window.ED6Physics,'ED7':window.ED7Physics,'ED8':window.ED8Physics}[id.split('.')[0]]||P);
-  const courses=levels.filter(l=>!l.courseId);
+  // Upgrade legacy lessons in place: each old progress key still occurs once.
+  for(const prefix of ['CM','TS'])for(let i=1;i<=8;i++){
+    for(const lesson of window[prefix+i+'Lessons']){
+      const legacy=levels.find(item=>item.id===lesson.id);
+      if(legacy)Object.assign(legacy,lesson);else levels.push(lesson);
+    }
+  }
+  const moduleId=id=>({mechanics:'CM2',thermal:'TS5',quantum:'QM1',electro:'ED1'}[id]||id.split('.')[0]);
+  const renderer=id=>window[moduleId(id)+'Renderer'];
+  const modelAPI=id=>window[moduleId(id)+'Physics']||(moduleId(id)==='ED1'?P:null);
+  const courses=[{id:'mechanics',short:'理论力学',icon:'◎'},{id:'electro',short:'电动力学',icon:'↗'},{id:'thermal',short:'热统',icon:'≋'},{id:'quantum',short:'量子力学',icon:'ψ'}];
   const courseId=lesson=>lesson.courseId || lesson.id;
-  const demoId=id=>id==='ED1.2'?'electro':id;
+  const demoId=id=>({'ED1.2':'electro','QM1.1':'quantum','CM2.2':'mechanics','TS5.1':'thermal'}[id]||id);
+  // Preserve existing ED/QM panel IDs while adding the two new course panels.
+  const views={
+    electro:{name:'电动力学',prefix:'ED',entry:'ED1.1',tools:'electroTools',map:'electroMap',glossary:'electroGlossary',title:'glossaryModuleTitle',tabs:['mapViewBtn','demoViewBtn','glossaryViewBtn'],mapAPI:window.PhysicsQuestMap,data:window.ElectrodynamicsGlossary},
+    quantum:{name:'量子力学',prefix:'QM',entry:'quantum',tools:'quantumTools',map:'quantumMap',glossary:'quantumGlossary',title:'quantumGlossaryModuleTitle',tabs:['quantumMapViewBtn','quantumDemoViewBtn','quantumGlossaryViewBtn'],mapAPI:window.PhysicsQuestQuantumMap,data:window.QuantumGlossary},
+    mechanics:{name:'理论力学',prefix:'CM',entry:'CM1.1',tools:'mechanicsTools',map:'mechanicsMap',glossary:'mechanicsGlossary',title:'mechanicsGlossaryModuleTitle',tabs:['mechanicsMapViewBtn','mechanicsDemoViewBtn','mechanicsGlossaryViewBtn'],mapAPI:window.PhysicsQuestMechanicsMap,data:window.MechanicsGlossary},
+    thermal:{name:'热力学与统计物理',prefix:'TS',entry:'TS1.1',tools:'thermalTools',map:'thermalMap',glossary:'thermalGlossary',title:'thermalGlossaryModuleTitle',tabs:['thermalMapViewBtn','thermalDemoViewBtn','thermalGlossaryViewBtn'],mapAPI:window.PhysicsQuestThermalMap,data:window.ThermalGlossary}
+  };
   const $ = id => document.getElementById(id);
   const STORAGE_KEY='physics-quest-mvp-v1';
   let memoryState={};
@@ -86,10 +106,9 @@
   let current='mechanics';
   let params={};
   let start=performance.now();
-  let lastFrame=0;
   function currentLesson(){return levels.find(l=>l.id===current);}
   function progress(id){return state.lessons[id] || {predict:false,derive:false,note:''};}
-  function setProgress(id, patch){state.lessons[id]={...progress(id),...patch};saveState();updateNav();window.PhysicsQuestMap.refresh();}
+  function setProgress(id, patch){state.lessons[id]={...progress(id),...patch};saveState();updateNav();Object.values(views).forEach(view=>view.mapAPI.refresh());}
   function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function updateNav(){
     $('courseNav').innerHTML=courses.map(l=>{
@@ -99,8 +118,7 @@
       return `<button class="nav-item ${active?'active':''}" data-course="${l.id}" aria-current="${active?'page':'false'}"><span class="nav-icon">${l.icon}</span><span><b>${l.short}</b><small>${count} / ${members.length} 示范题完成</small></span><span class="nav-done">${count===members.length?'✓':''}</span></button>`;
     }).join('');
     document.querySelectorAll('[data-course]').forEach(b=>b.addEventListener('click',()=>{
-      if(b.dataset.course==='electro')switchLesson('ED1.1',{map:true,scroll:true});
-      else switchLesson(b.dataset.course,{scroll:true});
+      switchLesson(views[b.dataset.course].entry,{map:true,scroll:true});
     }));
     const complete=levels.filter(l=>progress(l.id).predict&&progress(l.id).derive).length;
     const points=levels.reduce((s,l)=>s+50*(Number(progress(l.id).predict)+Number(progress(l.id).derive)),0);
@@ -111,8 +129,8 @@
   function switchLesson(id,options={}){
     if (!levels.some(l=>l.id===id)) return;
     current=id;
-    glossaryModule=id==='electro'?'ED1':id.split('.')[0];
     const l=currentLesson();
+    glossaryModules[courseId(l)]=moduleId(id);
     params=Object.fromEntries(l.controls.map(c=>[c.id,c.value]));
     $('subjectTag').textContent=l.short;
     $('lessonTitle').textContent=l.title;
@@ -121,7 +139,7 @@
     $('goalText').textContent=l.goal;
     $('mathText').textContent=l.math;
     $('modelNote').textContent=l.modelNote;
-    $('simCanvas').className=l.courseId==='electro'?'ed1-canvas':'';
+    $('simCanvas').className='ed1-canvas';
     $('resourceTitle').textContent=l.resourceTitle;
     $('resourceDescription').textContent=l.resourceDescription;
     $('resourceLink').href=l.resourceUrl;
@@ -130,56 +148,61 @@
     $('savedIndicator').textContent='';
     $('controls').innerHTML=l.controls.map(c=>c.type==='select' ?
       `<div class="control"><label for="slider-${c.id}">${escapeHTML(c.label)}</label><select id="slider-${c.id}" aria-label="${escapeHTML(c.label)}">${c.options.map(o=>`<option value="${o.value}" ${o.value===c.value?'selected':''}>${escapeHTML(o.label)}</option>`).join('')}</select></div>` :
-      `<div class="control"><label for="slider-${c.id}"><span>${escapeHTML(c.label)}</span><output id="out-${c.id}">${c.value} ${escapeHTML(c.unit)}</output></label><input type="range" id="slider-${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}" aria-label="${escapeHTML(c.label)}"></div>`).join('');
+      `<div class="control"><label for="slider-${c.id}"><span>${escapeHTML(c.label)}</span><output id="out-${c.id}">${l.mapId?Number(c.value.toPrecision(5)):c.value} ${escapeHTML(c.unit)}</output></label><input type="range" id="slider-${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}" aria-label="${escapeHTML(c.label)}"></div>`).join('');
     l.controls.forEach(c=>$('slider-'+c.id).addEventListener(c.type==='select'?'change':'input',e=>{
       params[c.id]=Number(e.target.value);
-      if(c.type!=='select')$('out-'+c.id).textContent=e.target.value+' '+c.unit;
+      if(c.type!=='select')$('out-'+c.id).textContent=(l.mapId?Number(Number(e.target.value).toPrecision(5)):e.target.value)+' '+c.unit;
       drawMetrics();
     }));
-    $('derivation').innerHTML=`<details><summary>${courseId(l)==='electro'?'展开基础讲解':'展开关键推导'}（建议先独立思考）</summary>${l.derivation}</details>`+
+    $('derivation').innerHTML=`<details><summary>${courseId(l)==='quantum'?'展开关键推导':'展开基础讲解'}（建议先独立思考）</summary>${l.derivation}</details>`+
       (l.graduate?`<details class="graduate-task"><summary>研究生进阶：推导与检验（自评）</summary><p>${escapeHTML(l.graduate.task)}</p><details><summary>查看自检要点</summary><p>${escapeHTML(l.graduate.check)}</p></details><p>请独立写出中间步骤，列明适用条件及相关边界；涉及近似时给出小参数和误差估计，再改变一个条件检验能否迁移。本练习不计入两道示范题的完成状态。</p></details>`:'');
     setupQuestion('prediction',l.prediction,'predict');
     setupQuestion('derive',l.derive,'derive');
-    updateNav();drawMetrics();setElectroView(options.map===true?'map':'demo',options.scroll===true);
+    updateNav();drawMetrics();setCourseView(options.map===true?'map':'demo',options.scroll===true);
   }
-  let glossaryModule=null;
+  const glossaryModules={electro:null,quantum:null,mechanics:null,thermal:null};
   function renderGlossary(moduleId){
-    const data=window.ElectrodynamicsGlossary;
+    const subject=courseId(currentLesson()),quantum=subject!=='electro',view=views[subject];
+    const data=view.data;
+    const mount=$(view.glossary);
+    const titleId=view.title;
     const selected=data.modules.find(m=>m.id===moduleId)||data.modules[0];
-    glossaryModule=selected.id;
+    glossaryModules[subject]=selected.id;
     const total=data.modules.reduce((sum,m)=>sum+m.terms.length,0);
-    $('electroGlossary').innerHTML=`<div class="glossary-heading"><p class="section-no">核心概念 · ${total} 个中英词条</p><h2>从中文概念到英文教材</h2><p>按模块查阅名称、符号、含义和易混点。采用国际单位制；英文教材可能使用不同的度规、规范或单位约定。</p></div>`+
+    mount.innerHTML=`<div class="glossary-heading"><p class="section-no">核心概念 · ${total} 个中英词条</p><h2>从中文概念到英文教材</h2><p>${quantum?escapeHTML(data.conventions):'按模块查阅名称、符号、含义和易混点。采用国际单位制；英文教材可能使用不同的度规、规范或单位约定。'}</p></div>`+
       `<div class="glossary-modules" role="group" aria-label="选择术语模块">${data.modules.map(m=>`<button type="button" data-glossary-module="${m.id}" aria-pressed="${m.id===selected.id}"><b>${m.id}</b> ${escapeHTML(m.title)}</button>`).join('')}</div>`+
-      `<h3 id="glossaryModuleTitle">${selected.id} · ${escapeHTML(selected.title)}</h3>`+
+      `<h3 id="${titleId}">${selected.id} · ${escapeHTML(selected.title)}</h3>`+
       `<p class="glossary-reading">教材定位：${selected.readings.map(([key,locator])=>`<a href="${escapeHTML(data.sources[key].url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.sources[key].title)}</a>（${escapeHTML(locator)}）`).join('；')}。</p>`+
       '<p class="glossary-hint">窄屏可在表格内横向滚动。对应小节使用课程编号；释义与易混点按本课程的模型条件理解。</p>'+
-      `<div class="glossary-scroll" role="region" aria-labelledby="glossaryModuleTitle" tabindex="0"><table><caption>${selected.id} 核心概念中英文对照 · ${selected.terms.length} 项</caption><thead><tr><th scope="col">中文名称</th><th scope="col">英文名称</th><th scope="col">符号／单位</th><th scope="col">概念含义</th><th scope="col">易混点与适用边界</th><th scope="col">对应小节</th></tr></thead><tbody>${selected.terms.map(t=>`<tr><th scope="row">${escapeHTML(t.zh)}</th><td lang="en">${escapeHTML(t.en)}</td><td>${escapeHTML(t.symbol)}</td><td>${escapeHTML(t.definition)}</td><td>${escapeHTML(t.caveat)}</td><td>${t.lessons.map(escapeHTML).join('、')}</td></tr>`).join('')}</tbody></table></div>`;
-    $('electroGlossary').querySelectorAll('[data-glossary-module]').forEach(button=>button.addEventListener('click',()=>{
+      `<div class="glossary-scroll" role="region" aria-labelledby="${titleId}" tabindex="0"><table><caption>${selected.id} 核心概念中英文对照 · ${selected.terms.length} 项</caption><thead><tr><th scope="col">中文名称</th><th scope="col">英文名称</th><th scope="col">符号／单位</th><th scope="col">概念含义</th><th scope="col">易混点与适用边界</th><th scope="col">对应小节</th></tr></thead><tbody>${selected.terms.map(t=>`<tr><th scope="row">${escapeHTML(t.zh)}</th><td lang="en">${escapeHTML(t.en)}</td><td>${escapeHTML(t.symbol)}</td><td>${escapeHTML(t.definition)}</td><td>${escapeHTML(t.caveat)}</td><td>${t.lessons.map(escapeHTML).join('、')}</td></tr>`).join('')}</tbody></table></div>`+
+      (quantum?`<details class="map-sources"><summary>教材来源与核查边界</summary><p>${escapeHTML(data.scope)}</p><ul>${Object.values(data.sources).map(source=>`<li><a href="${escapeHTML(source.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(source.title)}</a></li>`).join('')}</ul><p>更新：${escapeHTML(data.updated)}。本页供查词，浏览不计XP。</p></details>`:'');
+    mount.querySelectorAll('[data-glossary-module]').forEach(button=>button.addEventListener('click',()=>{
       renderGlossary(button.dataset.glossaryModule);
       // Rendering replaces the selector buttons. Restore focus to the selected one.
-      Array.from($('electroGlossary').querySelectorAll('[data-glossary-module]')).find(b=>b.dataset.glossaryModule===glossaryModule)?.focus();
+      Array.from(mount.querySelectorAll('[data-glossary-module]')).find(b=>b.dataset.glossaryModule===glossaryModules[subject])?.focus();
     }));
   }
-  function setElectroView(view,scroll=false){
-    const l=currentLesson(),electro=courseId(l)==='electro';
-    const showMap=electro&&view==='map',showGlossary=electro&&view==='glossary';
-    $('electroTools').hidden=!electro;
-    $('subjectTag').textContent=showMap||showGlossary?'电动力学':l.short;
-    window.PhysicsQuestMap.show(showMap);
+  function setCourseView(viewName,scroll=false){
+    const lesson=currentLesson(),subject=courseId(lesson),view=views[subject];
+    const showMap=viewName==='map',showGlossary=viewName==='glossary';
+    for(const [key,item] of Object.entries(views)){
+      const active=key===subject;
+      $(item.tools).hidden=!active;
+      item.mapAPI.show(active&&showMap);
+      $(item.glossary).hidden=!(active&&showGlossary);
+      item.tabs.forEach((id,index)=>{
+        const selected=active&&index===(showMap?0:showGlossary?2:1);
+        $(id).setAttribute('aria-selected',String(selected));
+        $(id).setAttribute('tabindex',selected?'0':'-1');
+      });
+    }
     $('lessonLayout').hidden=showMap||showGlossary;
-    $('electroGlossary').hidden=!showGlossary;
-    if(showGlossary){
-      const currentModule=current==='electro'?'ED1':current.split('.')[0];
-      renderGlossary(glossaryModule||currentModule);
-    }
-    for(const [id,active] of [['mapViewBtn',showMap],['demoViewBtn',electro&&!showMap&&!showGlossary],['glossaryViewBtn',showGlossary]]){
-      $(id).setAttribute('aria-selected',String(active));
-      $(id).setAttribute('tabindex',active?'0':'-1');
-    }
-    $('lessonLayout').setAttribute('role',electro?'tabpanel':'region');
-    $('lessonLayout').setAttribute('aria-labelledby',electro?'demoViewBtn':'lessonTitle');
-    $('lessonTitle').textContent=showMap?'电动力学：8 模块课程地图':showGlossary?'电动力学：核心概念中英对照':l.title;
-    $('lessonIntro').textContent=showMap?'在地图中选择模块，展开关卡后点击“进入示范”。切换标签页可返回当前实验；ED1–ED8 均已开放示范，模块综合验收仍待开发。':showGlossary?'中文理解物理含义，英文对应教材原词；返回交互示范可继续当前实验。':l.intro;
+    $('lessonLayout').setAttribute('role','tabpanel');
+    $('lessonLayout').setAttribute('aria-labelledby',view.tabs[1]);
+    $('subjectTag').textContent=showMap||showGlossary?view.name:lesson.short;
+    $('lessonTitle').textContent=showMap?view.name+'：8 模块课程地图':showGlossary?view.name+'：核心概念中英对照':lesson.title;
+    $('lessonIntro').textContent=showMap?`在地图中选择${view.prefix}1～${view.prefix}8的32关交互示范。切换标签可返回当前实验，浏览不计XP；示范题完成不等于模块掌握，综合验收仍待实现。`:showGlossary?'中文理解物理含义，英文对应教材原词；返回交互示范可继续当前实验。':lesson.intro;
+    if(showGlossary)renderGlossary(glossaryModules[subject]||moduleId(current));
     if(scroll){$('lessonTitle').scrollIntoView({block:'start'});$('lessonTitle').focus({preventScroll:true});}
   }
   function setupQuestion(prefix,question,field){
@@ -210,7 +233,7 @@
   }
   function drawMetrics(){
     let m=[];
-    if(currentLesson().courseId==='electro'){
+    if(current!=='electro'&&views[courseId(currentLesson())]){
       m=renderer(current).metrics(current,params,modelAPI(current));
     } else if(current==='mechanics'){
       const p=P.pendulum(params.length,params.g,params.theta);
@@ -226,9 +249,9 @@
       m=[['定态能量 Eₙ',p.energyEv.toFixed(3)+' eV'],['内部节点数',p.interiorNodes+''],['能量缩放规律','Eₙ ∝ n²/L²']];
     }
     $('metrics').innerHTML=m.map(([label,value])=>`<div class="metric"><small>${escapeHTML(label)}</small><strong>${escapeHTML(value)}</strong></div>`).join('');
-    const table=currentLesson().courseId==='electro'?renderer(current).table(current,params,modelAPI(current)):null;
+    const table=current!=='electro'&&views[courseId(currentLesson())]?renderer(current).table(current,params,modelAPI(current)):null;
     $('fieldTable').hidden=!table;
-    $('fieldTable').innerHTML=table?`<table><caption>模型数值（带符号分量）</caption><thead><tr>${table.headers.map(h=>`<th scope="col">${escapeHTML(h)}</th>`).join('')}</tr></thead><tbody>${table.rows.map(row=>`<tr>${row.map((value,i)=>i?`<td>${escapeHTML(value)}</td>`:`<th scope="row">${escapeHTML(value)}</th>`).join('')}</tr>`).join('')}</tbody></table>`:'';
+    $('fieldTable').innerHTML=table?`<table><caption>模型数值与核验</caption><thead><tr>${table.headers.map(h=>`<th scope="col">${escapeHTML(h)}</th>`).join('')}</tr></thead><tbody>${table.rows.map(row=>`<tr>${row.map((value,i)=>i?`<td>${escapeHTML(value)}</td>`:`<th scope="row">${escapeHTML(value)}</th>`).join('')}</tr>`).join('')}</tbody></table>`:'';
     draw(performance.now());
   }
   const canvas=$('simCanvas');
@@ -265,7 +288,7 @@
   function draw(t){
     if(!ctx)return;
     ctx.clearRect(0,0,W,H);
-    if(currentLesson().courseId==='electro'){renderer(current).draw(ctx,current,params,modelAPI(current),isDay()?{...colors,text:'#000000',purple:colors.violet}:null);return;}
+    if(current!=='electro'&&views[courseId(currentLesson())]){renderer(current).draw(ctx,current,params,modelAPI(current),isDay()?{...colors,text:'#000000',purple:colors.violet}:null);return;}
     if(current==='mechanics')drawMechanics(t);
     if(current==='electro')drawElectro();
     if(current==='thermal')drawThermal();
@@ -328,7 +351,6 @@
     text('0',70,320,colors.muted,12,'center');text('1',730,320,colors.muted,12,'center');
     text(`n = ${n}   ·   L = ${L.toFixed(1)} nm`,560,45,colors.gold,14);
   }
-  function animate(t){if(t-lastFrame>40){if(current==='mechanics')draw(t);lastFrame=t;}requestAnimationFrame(animate);}
   $('saveNoteBtn').addEventListener('click',()=>{setProgress(current,{note:$('reflection').value});$('savedIndicator').textContent='✓ 已保存到本机浏览器';});
   $('reflection').addEventListener('change',()=>setProgress(current,{note:$('reflection').value}));
   $('exportBtn').addEventListener('click',()=>{
@@ -343,21 +365,22 @@
     if(!confirm('确定清空四门课程的挑战进度与学习笔记？此操作不可撤销。'))return;
     state={lessons:{}};saveState();switchLesson(current);
   });
-  const viewNames=['map','demo','glossary'];
-  const viewTabs=[$('mapViewBtn'),$('demoViewBtn'),$('glossaryViewBtn')];
-  viewTabs.forEach((tab,index)=>{
-    tab.addEventListener('click',()=>setElectroView(viewNames[index]));
-    tab.addEventListener('keydown',event=>{
-      let next;
-      if(event.key==='ArrowRight')next=(index+1)%viewTabs.length;
-      else if(event.key==='ArrowLeft')next=(index+viewTabs.length-1)%viewTabs.length;
-      else if(event.key==='Home')next=0;
-      else if(event.key==='End')next=viewTabs.length-1;
-      else return;
-      event.preventDefault();setElectroView(viewNames[next]);viewTabs[next].focus();
+  // Each course keeps its own tab controls and accessible panel relationships.
+  for(const {tabs:group} of Object.values(views)){
+    const viewNames=['map','demo','glossary'],viewTabs=group.map(id=>$(id));
+    viewTabs.forEach((tab,index)=>{
+      tab.addEventListener('click',()=>setCourseView(viewNames[index]));
+      tab.addEventListener('keydown',event=>{
+        let next;
+        if(event.key==='ArrowRight')next=(index+1)%viewTabs.length;
+        else if(event.key==='ArrowLeft')next=(index+viewTabs.length-1)%viewTabs.length;
+        else if(event.key==='Home')next=0;
+        else if(event.key==='End')next=viewTabs.length-1;
+        else return;
+        event.preventDefault();setCourseView(viewNames[next]);viewTabs[next].focus();
+      });
     });
-  });
-  window.PhysicsQuestMap.configure({onOpenLesson:id=>switchLesson(demoId(id),{scroll:true}),getProgress:id=>progress(demoId(id))});
-  switchLesson(current);
-  requestAnimationFrame(animate);
+  }
+  for(const view of Object.values(views))view.mapAPI.configure({onOpenLesson:id=>switchLesson(demoId(id),{scroll:true}),getProgress:id=>progress(demoId(id))});
+  switchLesson(current,{map:true});
 })();

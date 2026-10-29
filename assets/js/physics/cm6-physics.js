@@ -1,0 +1,25 @@
+/* CM6: SI models unless the displayed axes explicitly define reduced units.
+ * Each function validates domains; undefined branches remain null, never zero.
+ */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.CM6Physics=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+
+  'use strict';
+  const PI=Math.PI;
+  function finite(...xs){if(!xs.every(Number.isFinite))throw new RangeError('Inputs must be finite.');}
+  function positive(...xs){finite(...xs);if(xs.some(x=>x<=0))throw new RangeError('Positive values required.');}
+  function bounded(x,a,b){finite(x);if(x<a||x>b)throw new RangeError('Input outside model domain.');}
+  const sq=x=>x*x;
+  const graph=(title,x,y,lo,hi,series,options)=>({title,x,y,lo,hi,series,options});
+  const series=(label,fn)=>({label,fn});
+  function pack(raw,metrics,rows,plots,notice='解析模型；无平滑、无随机采样。'){return {...raw,metrics,rows,plots,notice};}
+  function rk4(rhs,y0,tmax,n=1200){positive(tmax,n);const h=tmax/n,rows=[[0,...y0]];let y=y0.slice();for(let i=0;i<n;i++){const t=i*h,k1=rhs(t,y),k2=rhs(t+h/2,y.map((v,j)=>v+h*k1[j]/2)),k3=rhs(t+h/2,y.map((v,j)=>v+h*k2[j]/2)),k4=rhs(t+h,y.map((v,j)=>v+h*k3[j]));y=y.map((v,j)=>v+h*(k1[j]+2*k2[j]+2*k3[j]+k4[j])/6);rows.push([(i+1)*h,...y]);}return rows;}
+  function sample(rows,col,x){const h=rows[1][0]-rows[0][0],z=Math.max(0,Math.min(rows.length-1,x/h)),i=Math.min(rows.length-2,Math.floor(z)),f=z-i;return rows[i][col]*(1-f)+rows[i+1][col]*f;}
+
+  function legendre(m,omega,q,v){positive(m,omega);finite(q,v);const p=m*v,T=.5*m*v*v,V=.5*m*omega**2*q*q,L=T-V,H=p*v-L;return pack({p,T,V,L,H},[['正则动量 p [kg·m/s]',p],['拉格朗日量 ℒ [J]',L],['哈密顿量 H [J]',H]],[['Legendre变换','p=∂ℒ/∂v=mv；m>0保证速度—动量可逆'],['pv−ℒ [J]',p*v-L],['T+V [J]',T+V],['边界','这一自然、自治、无速度势的模型H=T+V；一般情形不能直接套用']],[graph('由斜率定义动量','v [m/s]','ℒ [J]',-3,3,[series('ℒ(v)',x=>.5*m*x*x-V),series('当前切线',x=>L+p*(x-v))]),graph('在正则变量中表示能量','p [kg·m/s]','H [J]',-3*m,3*m,[series('H(p)',x=>x*x/(2*m)+V)])]);}
+  function oscillator(m,omega,q0,p0,time){positive(m,omega);finite(q0,p0,time);const q=t=>q0*Math.cos(omega*t)+p0/(m*omega)*Math.sin(omega*t),p=t=>p0*Math.cos(omega*t)-m*omega*q0*Math.sin(omega*t),E=p0*p0/(2*m)+.5*m*omega**2*q0*q0,A=Math.sqrt(2*E/(m*omega**2));return pack({q,p,E,A,at:{q:q(time),p:p(time)}},[['当前q [m]',q(time)],['当前p [kg·m/s]',p(time)],['守恒能量 H [J]',E]],[['哈密顿方程','q̇=p/m；ṗ=−mω²q'],['相轨道面积 [J·s]',2*PI*E/omega],['时间坐标','右图横轴为相对当前时刻Δt；左图坐标各保留物理单位'],['E=0','平衡点退化成点，不将零幅椭圆误认为有非零面积']],[graph('等能量相轨道的两支','q [m]','p [kg·m/s]',-Math.max(A,.01),Math.max(A,.01),[series('正p支',x=>Math.abs(x)<=A?m*omega*Math.sqrt(Math.max(0,A*A-x*x)):null),series('负p支',x=>Math.abs(x)<=A?-m*omega*Math.sqrt(Math.max(0,A*A-x*x)):null)]),graph('沿哈密顿流运动','Δt [s]','q [m]',0,4*PI/omega,[series('q(t+Δt)',t=>q(time+t))])]);}
+  function pendulumPhase(m,length,g,energy,theta){positive(m,length,g);bounded(energy,0,4);finite(theta);const E=energy*m*g*length,I=m*length*length,V=x=>m*g*length*(1-Math.cos(x)),at=E-V(theta),moment=at>=-1e-12?Math.sqrt(Math.max(0,2*I*at)):null,sep=x=>Math.sqrt(Math.max(0,2*I*(2*m*g*length-V(x)))),branch=x=>E>=V(x)?Math.sqrt(2*I*(E-V(x))):null;return pack({E,I,moment,V,separatrixEnergy:2*m*g*length},[['能量 E/(mgL)',energy],['运动类型',energy<2?'振动（0为静止）':energy===2?'分离曲线':'转动'],['当前正支pθ [kg·m²/s]',moment===null?'角度在禁区':moment]],[['正则变量','θ为周期角；pθ=mL²θ̇，不是mLθ̇'],['分离能量 [J]',2*m*g*length],['转动方向','E>2mgL有正/负两支，角度跨±π连续，不在边界反射'],['禁区','E<V时动量未定义，不当作零；分离曲线趋近不稳定顶点耗时无穷']],[graph('振动、转动与分离曲线','θ [rad]','pθ [kg·m²/s]',-PI,PI,[series('当前正支',branch),series('当前负支',x=>branch(x)===null?null:-branch(x)),series('正分离支',sep)]),graph('势能与可达角度','θ [rad]','能量 [J]',-PI,PI,[series('V(θ)',V),series('E',()=>E)])]);}
+  function liouville(m,omega,time,kind,a,b){positive(m,omega,a,b);finite(time);if(![0,1].includes(kind))throw new RangeError('Unknown flow.');const c=kind===0?1:Math.cos(omega*time),s=kind===0?time/m:Math.sin(omega*time)/(m*omega),d=kind===0?0:-m*omega*Math.sin(omega*time),M=[[c,s],[d,c]],det=c*c-s*d,q0=u=>a*Math.cos(u),p0=u=>b*Math.sin(u),q=u=>c*q0(u)+s*p0(u),p=u=>d*q0(u)+c*p0(u);return pack({M,det,area:PI*a*b,q,p},[['流映射行列式',det],['初始相空间面积 [J·s]',PI*a*b],['演化后面积 [J·s]',det*PI*a*b]],[['初始点云','q0=a cosu，p0=b sinu，0≤u<2π；a [m]，b [kg·m/s]'],['模型',kind===0?'自由粒子：q=q0+(t/m)p0，p=p0':'谐振子精确线性流'],['线性映射第一行',M[0].map(x=>Number(x.toPrecision(5))).join('，')],['线性映射第二行',M[1].map(x=>Number(x.toPrecision(5))).join('，')],['面积含义','q–p相平面有向面积；不是q投影宽度，也不是屏幕面积']],[graph('同一批边界点的位置投影','边界参数 u [rad]','q [m]',0,2*PI,[series('初始q0',q0),series('演化q',q)]),graph('同一批边界点的动量投影','边界参数 u [rad]','p [kg·m/s]',0,2*PI,[series('初始p0',p0),series('演化p',p)])]);}
+  function evaluate(id,p){Object.values(p).forEach(x=>finite(x));switch(id){case 'CM6.1':return legendre(p.m,p.omega,p.q,p.v);case 'CM6.2':return oscillator(p.m,p.omega,p.q0,p.p0,p.time);case 'CM6.3':return pendulumPhase(p.m,p.length,p.g,p.energy,p.theta);case 'CM6.4':return liouville(p.m,p.omega,p.time,p.kind,p.a,p.b);default:throw new RangeError('Unknown CM6 lesson.');}}
+  return {evaluate,legendre,oscillator,pendulumPhase,liouville};
+
+});

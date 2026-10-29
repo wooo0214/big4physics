@@ -1,0 +1,25 @@
+/* CM4: SI models unless the displayed axes explicitly define reduced units.
+ * Each function validates domains; undefined branches remain null, never zero.
+ */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.CM4Physics=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+
+  'use strict';
+  const PI=Math.PI;
+  function finite(...xs){if(!xs.every(Number.isFinite))throw new RangeError('Inputs must be finite.');}
+  function positive(...xs){finite(...xs);if(xs.some(x=>x<=0))throw new RangeError('Positive values required.');}
+  function bounded(x,a,b){finite(x);if(x<a||x>b)throw new RangeError('Input outside model domain.');}
+  const sq=x=>x*x;
+  const graph=(title,x,y,lo,hi,series,options)=>({title,x,y,lo,hi,series,options});
+  const series=(label,fn)=>({label,fn});
+  function pack(raw,metrics,rows,plots,notice='解析模型；无平滑、无随机采样。'){return {...raw,metrics,rows,plots,notice};}
+  function rk4(rhs,y0,tmax,n=1200){positive(tmax,n);const h=tmax/n,rows=[[0,...y0]];let y=y0.slice();for(let i=0;i<n;i++){const t=i*h,k1=rhs(t,y),k2=rhs(t+h/2,y.map((v,j)=>v+h*k1[j]/2)),k3=rhs(t+h/2,y.map((v,j)=>v+h*k2[j]/2)),k4=rhs(t+h,y.map((v,j)=>v+h*k3[j]));y=y.map((v,j)=>v+h*(k1[j]+2*k2[j]+2*k3[j]+k4[j])/6);rows.push([(i+1)*h,...y]);}return rows;}
+  function sample(rows,col,x){const h=rows[1][0]-rows[0][0],z=Math.max(0,Math.min(rows.length-1,x/h)),i=Math.min(rows.length-2,Math.floor(z)),f=z-i;return rows[i][col]*(1-f)+rows[i+1][col]*f;}
+
+  function stability(m,k,lambda){positive(m,lambda);finite(k);const V=x=>.5*k*x*x+.25*lambda*x**4,roots=k<0?[0,-Math.sqrt(-k/lambda),Math.sqrt(-k/lambda)]:[0],curvature=x=>k+3*lambda*x*x;return pack({roots,curvatures:roots.map(curvature),omega:k>0?Math.sqrt(k/m):null},[['原点曲率 [N/m]',k],['线性稳定性',k>0?'稳定':k<0?'不稳定':'线性判据退化'],['原点小振动角频率 [rad/s]',k>0?Math.sqrt(k/m):'无线性振动频率']],[['势函数','V=kx²/2+λx⁴/4，λ>0 [N/m³]；m [kg]'],['平衡点 [m]',roots.map(x=>Number(x.toPrecision(5))).join('，')],['k=0边界','二阶判据不能决定；正四次项使原点非线性稳定，但ω→0']],[graph('曲率与势阱','x [m]','V [J]',-2,2,[series('V(x)',V)]),graph('恢复力决定线性化','x [m]','F [N]',-2,2,[series('完整−V′',x=>-k*x-lambda*x**3),series('线性−kx',x=>-k*x)])]);}
+  function modes(m,k,kc){positive(m,k);bounded(kc,0,10);const w1=Math.sqrt(k/m),w2=Math.sqrt((k+2*kc)/m);return pack({w1,w2},[['同相角频率 ω+ [rad/s]',w1],['反相角频率 ω− [rad/s]',w2],['模向量内积',0]],[['模型','两质量均m，两侧接墙弹簧k，中间耦合弹簧κ；均为线性无阻尼'],['归一模向量','e+=(1,1)/√2；e−=(1,−1)/√2'],['质量矩阵','M=mI；本征方程K e=ω² M e']],[graph('同相模：耦合弹簧不伸长','t [s]','x/A [无量纲]',0,4*PI/w1,[series('x1/A',t=>Math.cos(w1*t)),series('x2/A',t=>Math.cos(w1*t))]),graph('反相模：耦合增加恢复力','t [s]','x/A [无量纲]',0,4*PI/w1,[series('x1/A',t=>Math.cos(w2*t)),series('x2/A',t=>-Math.cos(w2*t))])]);}
+  function beats(m,k,kc,A){positive(m,k);bounded(kc,0,3);finite(A);const wp=Math.sqrt(k/m),wm=Math.sqrt((k+2*kc)/m),x1=t=>A*(Math.cos(wp*t)+Math.cos(wm*t))/2,x2=t=>A*(Math.cos(wp*t)-Math.cos(wm*t))/2,v1=t=>-A*(wp*Math.sin(wp*t)+wm*Math.sin(wm*t))/2,v2=t=>-A*(wp*Math.sin(wp*t)-wm*Math.sin(wm*t))/2,E1=t=>.5*m*v1(t)**2+.5*k*x1(t)**2+.25*kc*(x1(t)-x2(t))**2,E2=t=>.5*m*v2(t)**2+.5*k*x2(t)**2+.25*kc*(x1(t)-x2(t))**2,total=.5*(k+kc)*A*A,end=kc>0?Math.min(80,2*PI/(wm-wp)):8*PI/wp;return pack({wp,wm,x1,x2,E1,E2,total,beatPeriod:kc>0?2*PI/(wm-wp):null},[['模频差 Δω [rad/s]',wm-wp],['包络能量交换周期 [s]',kc>0?2*PI/(wm-wp):'无交换'],['总能量 [J]',total]],[['初值','x1(0)=A，x2(0)=0，v1(0)=v2(0)=0'],['能量分账','每个振子的能量含一半耦合势；E1+E2严格等于总能量'],['拍近似','弱耦合时慢包络清楚；有限耦合仍使用精确正常模解'],['采样','图为均匀时间采样，无平滑；较长交换周期窗口最多80 s']],[graph('两个正常模叠加','t [s]','x [m]',0,end,[series('x1',x1),series('x2',x2)]),graph('两种能量之和守恒','t [s]','能量 [J]',0,end,[series('E1含半耦合',E1),series('E2含半耦合',E2),series('总能量',()=>total)])]);}
+  function driven(m,k,gamma,F,omega){positive(m,k);bounded(gamma,.01,3);finite(F);bounded(omega,0,5);const response=w=>F/Math.hypot(k-m*w*w,2*m*gamma*w),amp=response(omega),phase=F===0?null:Math.atan2(2*m*gamma*omega,k-m*omega**2),w0=Math.sqrt(k/m);return pack({amp,phase,w0,response,power:m*gamma*omega**2*amp**2},[['稳态振幅 [m]',amp],['位移落后相位 [rad]',phase],['无阻尼固有角频率 [rad/s]',w0]],[['运动方程','m ẍ+2mγẋ+kx=F0 cosΩt；γ [s⁻¹]，F0≥0 [N]'],['平均耗散功率 [W]',m*gamma*omega**2*amp**2],['平均输入功率 [W]',F===0?0:F*amp*omega*Math.sin(phase)/2],['稳态假设','γ≥0.01 s⁻¹；已等待瞬态衰减，F0=0时相位及归一位移未定义'],['峰值判别','位移振幅峰Ωr=√(ω0²−2γ²)，仅ω0²>2γ²；否则最大值在Ω=0'],['共振不等于发散','γ>0保证有限响应；相位以atan2保留象限']],[graph('扫描驱动角频率','Ω [rad/s]','稳态振幅 [m]',0,Math.max(3*w0,omega+1),[series('A(Ω)',response)]),graph('力与位移的相位差','t [s]','归一化值',0,omega>0?4*PI/omega:4,[series('x/A',t=>F===0?null:Math.cos(omega*t-phase)),series('F/F0',t=>F===0?null:Math.cos(omega*t))])]);}
+  function evaluate(id,p){Object.values(p).forEach(x=>finite(x));switch(id){case 'CM4.1':return stability(p.m,p.k,p.lambda);case 'CM4.2':return modes(p.m,p.k,p.kc);case 'CM4.3':return beats(p.m,p.k,p.kc,p.A);case 'CM4.4':if(p.F<0)throw new RangeError('Force amplitude must be nonnegative.');return driven(p.m,p.k,p.gamma,p.F,p.omega);default:throw new RangeError('Unknown CM4 lesson.');}}
+  return {evaluate,stability,modes,beats,driven};
+
+});

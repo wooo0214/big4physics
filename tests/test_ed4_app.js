@@ -5,7 +5,7 @@ const lessons=require('../assets/js/lessons/ed4-lessons.js');
 const initial={lessons:{mechanics:{predict:true,derive:true,note:'原单摆记录'},electro:{predict:true,derive:true,note:'原高斯记录'},'ED2.3':{predict:true,derive:false,note:'ED2 保留'}}};
 const app=boot(initial);
 function button(node,key,value){const b=node.querySelectorAll('[data-'+key+']').find(e=>e.attrs['data-'+key]===value);assert.ok(b,'Missing '+key+'='+value);return b;}
-assert.equal(app.node('progressText').textContent,'2 / 35');assert.equal(app.node('xpText').textContent,'250');
+assert.equal(app.node('progressText').textContent,'2 / 128');assert.equal(app.node('xpText').textContent,'250');
 button(app.node('courseNav'),'course','electro').click();
 assert.ok(app.node('electroMap').textContent.includes('32 个已有示范'));
 button(app.node('electroMap'),'module','ED4').click();
@@ -41,7 +41,7 @@ for(const lesson of lessons){
  }
  app.node('reflection').value=lesson.id+' 检查笔记';app.node('saveNoteBtn').click();
 }
-assert.equal(app.node('progressText').textContent,'6 / 35');assert.equal(app.node('xpText').textContent,'650');
+assert.equal(app.node('progressText').textContent,'6 / 128');assert.equal(app.node('xpText').textContent,'650');
 for(const key of Object.keys(initial.lessons))assert.deepEqual(app.snapshot().lessons[key],initial.lessons[key]);
 const recordsBeforeExploring=app.serialized();
 function setControl(id,value){const e=app.node('slider-'+id);e.value=value;e.fire('input');}
@@ -53,19 +53,20 @@ assert.ok(!/NaN|Infinity/.test(app.node('fieldTable').textContent));
 assert.equal(app.serialized(),recordsBeforeExploring,'Browsing and changing controls must not write learning records.');
 app.node('exportBtn').click();
 for(const lesson of lessons)assert.ok(app.blobs[0].includes(lesson.id+' 检查笔记'));
-assert.ok(app.blobs[0].includes('原高斯记录'));assert.ok(app.blobs[0].includes('6/35'));
+assert.ok(app.blobs[0].includes('原高斯记录'));assert.ok(app.blobs[0].includes('6/128'));
 const reload=boot(app.snapshot(),{theme:app.theme()});
-assert.equal(reload.node('progressText').textContent,'6 / 35');assert.equal(reload.node('xpText').textContent,'650');
+assert.equal(reload.node('progressText').textContent,'6 / 128');assert.equal(reload.node('xpText').textContent,'650');
 button(reload.node('courseNav'),'course','electro').click();button(reload.node('electroMap'),'module','ED4').click();
 assert.equal(reload.node('electroMap').querySelectorAll('.available').filter(e=>e.textContent==='示范题完成').length,4);
 openLesson(reload,'ED4.3');assert.equal(reload.node('reflection').value,'ED4.3 检查笔记');
 button(reload.node('courseNav'),'course','quantum').click();assert.equal(reload.node('electroTools').hidden,true);
 console.log('PASS ED4 app: map launchers and tabs, Cartesian control combinations in both themes, finite drawing, black day text, quiz/XP, old records, notes/export/reload. Real browser layout requires separate inspection.');
 
-// All thirty-five IDs counted once: ED1.2 stays under the legacy electro key.
+// All sixty-six IDs counted once: ED1.2 stays under the legacy electro key.
 const curriculum=require('../assets/js/data/electrodynamics-curriculum.js');
-const allIds=['mechanics','thermal','quantum',...curriculum.modules.flatMap(m=>m.lessons).filter(l=>l.status==='available').map(l=>l.implementationId)];
-assert.equal(new Set(allIds).size,35);
+const quantum=require('../assets/js/data/quantum-curriculum.js');
+const allIds=['mechanics','thermal',...quantum.modules.flatMap(m=>m.lessons).filter(l=>l.status==='available').map(l=>l.implementationId),...curriculum.modules.flatMap(m=>m.lessons).filter(l=>l.status==='available').map(l=>l.implementationId)];
+assert.equal(new Set(allIds).size,66);
 const complete=boot({lessons:Object.fromEntries(allIds.map(id=>[id,{predict:true,derive:true,note:''}]))});
-assert.equal(complete.node('progressText').textContent,'35 / 35');assert.equal(complete.node('xpText').textContent,'3500');
-console.log('PASS full progress: 35 unique records, 70 answers, 3500 XP; ED1.2 retains legacy electro binding.');
+assert.equal(complete.node('progressText').textContent,'66 / 128');assert.equal(complete.node('xpText').textContent,'6600');
+console.log('PASS full progress: 66 unique records, 132 answers, 6600 XP; ED1.2 retains legacy electro binding.');

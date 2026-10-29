@@ -86,5 +86,7 @@ app.paintedText.forEach(t=>assert.ok(!unlocalized.test(t.text),'Canvas term: '+t
 node('courseNav').querySelectorAll('[data-course]').find(b=>b.dataset.course==='thermal').click();
 assert.equal(node('electroGlossary').hidden,true);assert.equal(node('electroTools').hidden,true);
 assert.equal(node('glossaryViewBtn').getAttribute('aria-selected'),'false');
-assert.equal(node('lessonLayout').hidden,false);
+assert.equal(node('lessonLayout').hidden,true);
+assert.equal(node('thermalMap').hidden,false);
+assert.equal(node('thermalMapViewBtn').getAttribute('aria-selected'),'true');
 console.log('PASS glossary: 116 bilingual terms, 32 sections, textbook locators, Chinese teaching text/Canvas, graduate self-checks, three-tab keyboard/focus, unchanged controls/draft/progress and other courses.');

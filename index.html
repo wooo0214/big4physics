@@ -91,8 +91,23 @@
       <section id="electroTools" class="electro-tools" aria-label="电动力学视图" hidden>
         <div class="electro-view-buttons" role="tablist" aria-label="电动力学内容"><button id="mapViewBtn" class="electro-tab" type="button" role="tab" aria-controls="electroMap" aria-selected="false" tabindex="-1">课程地图</button><button id="demoViewBtn" class="electro-tab" type="button" role="tab" aria-controls="lessonLayout" aria-selected="false" tabindex="-1">交互示范</button><button id="glossaryViewBtn" class="electro-tab" type="button" role="tab" aria-controls="electroGlossary" aria-selected="false" tabindex="-1">核心概念中英对照</button></div>
       </section>
+      <section id="quantumTools" class="electro-tools" aria-label="量子力学视图" hidden>
+        <div class="electro-view-buttons" role="tablist" aria-label="量子力学内容"><button id="quantumMapViewBtn" class="electro-tab" type="button" role="tab" aria-controls="quantumMap" aria-selected="false" tabindex="-1">课程地图</button><button id="quantumDemoViewBtn" class="electro-tab" type="button" role="tab" aria-controls="lessonLayout" aria-selected="false" tabindex="-1">交互示范</button><button id="quantumGlossaryViewBtn" class="electro-tab" type="button" role="tab" aria-controls="quantumGlossary" aria-selected="false" tabindex="-1">核心概念中英对照</button></div>
+      </section>
+      <section id="mechanicsTools" class="electro-tools" aria-label="理论力学视图" hidden>
+        <div class="electro-view-buttons" role="tablist" aria-label="理论力学内容"><button id="mechanicsMapViewBtn" class="electro-tab" type="button" role="tab" aria-controls="mechanicsMap" aria-selected="false" tabindex="-1">课程地图</button><button id="mechanicsDemoViewBtn" class="electro-tab" type="button" role="tab" aria-controls="lessonLayout" aria-selected="false" tabindex="-1">交互示范</button><button id="mechanicsGlossaryViewBtn" class="electro-tab" type="button" role="tab" aria-controls="mechanicsGlossary" aria-selected="false" tabindex="-1">核心概念中英对照</button></div>
+      </section>
+      <section id="mechanicsMap" class="course-map" role="tabpanel" aria-labelledby="mechanicsMapViewBtn" tabindex="0" hidden></section>
+      <section id="mechanicsGlossary" class="panel electro-glossary" role="tabpanel" aria-labelledby="mechanicsGlossaryViewBtn" tabindex="0" hidden></section>
+      <section id="thermalTools" class="electro-tools" aria-label="热力学与统计物理视图" hidden>
+        <div class="electro-view-buttons" role="tablist" aria-label="热力学与统计物理内容"><button id="thermalMapViewBtn" class="electro-tab" type="button" role="tab" aria-controls="thermalMap" aria-selected="false" tabindex="-1">课程地图</button><button id="thermalDemoViewBtn" class="electro-tab" type="button" role="tab" aria-controls="lessonLayout" aria-selected="false" tabindex="-1">交互示范</button><button id="thermalGlossaryViewBtn" class="electro-tab" type="button" role="tab" aria-controls="thermalGlossary" aria-selected="false" tabindex="-1">核心概念中英对照</button></div>
+      </section>
+      <section id="thermalMap" class="course-map" role="tabpanel" aria-labelledby="thermalMapViewBtn" tabindex="0" hidden></section>
+      <section id="thermalGlossary" class="panel electro-glossary" role="tabpanel" aria-labelledby="thermalGlossaryViewBtn" tabindex="0" hidden></section>
       <section id="electroMap" class="course-map" role="tabpanel" aria-labelledby="mapViewBtn" tabindex="0" hidden></section>
+      <section id="quantumMap" class="course-map" role="tabpanel" aria-labelledby="quantumMapViewBtn" tabindex="0" hidden></section>
       <section id="electroGlossary" class="panel electro-glossary" role="tabpanel" aria-labelledby="glossaryViewBtn" tabindex="0" hidden></section>
+      <section id="quantumGlossary" class="panel electro-glossary" role="tabpanel" aria-labelledby="quantumGlossaryViewBtn" tabindex="0" hidden></section>
       <div id="lessonLayout" class="layout" role="region" aria-labelledby="lessonTitle" tabindex="0">
         <section class="primary">
           <div class="panel sim-panel">
@@ -124,6 +139,12 @@
 <script src="assets/js/physics/physics.js?v=14f30f302b09"></script>
 <script src="assets/js/data/electrodynamics-curriculum.js?v=a5fb070ddd1b"></script>
 <script src="assets/js/data/electrodynamics-glossary.js?v=2b5b63cc16e0"></script>
+<script src="assets/js/data/quantum-curriculum.js?v=bc396063c580"></script>
+<script src="assets/js/data/quantum-glossary.js?v=95c9f3a62f83"></script>
+<script src="assets/js/data/mechanics-curriculum.js?v=449e2504354e"></script>
+<script src="assets/js/data/mechanics-glossary.js?v=446fe8ef446d"></script>
+<script src="assets/js/data/thermal-curriculum.js?v=ec9eaaf7f75b"></script>
+<script src="assets/js/data/thermal-glossary.js?v=4a862c719db0"></script>
 <script src="assets/js/lessons/ed1-lessons.js?v=623342e00760"></script>
 <script src="assets/js/renderers/ed1-renderer.js?v=bbcc48a2f342"></script>
 <script src="assets/js/physics/ed2-physics.js?v=33f0e770303d"></script>
@@ -147,7 +168,82 @@
 <script src="assets/js/physics/ed8-physics.js?v=3b9ed7ab03a2"></script>
 <script src="assets/js/lessons/ed8-lessons.js?v=c79285729083"></script>
 <script src="assets/js/renderers/ed8-renderer.js?v=e56feadeeff0"></script>
+<script src="assets/js/physics/qm1-physics.js?v=1eaf01a6c08f"></script>
+<script src="assets/js/lessons/qm1-lessons.js?v=72667ae27547"></script>
+<script src="assets/js/renderers/qm1-renderer.js?v=1e7da7105237"></script>
+<script src="assets/js/physics/qm2-physics.js?v=0cccc3b0dedc"></script>
+<script src="assets/js/lessons/qm2-lessons.js?v=c3aa77f11008"></script>
+<script src="assets/js/renderers/qm2-renderer.js?v=66fac6f02fee"></script>
+<script src="assets/js/physics/qm3-physics.js?v=d4894c81598d"></script>
+<script src="assets/js/lessons/qm3-lessons.js?v=aeb9deaf016c"></script>
+<script src="assets/js/renderers/qm3-renderer.js?v=5d4bcdd8350e"></script>
+<script src="assets/js/physics/qm4-physics.js?v=03e698e252dd"></script>
+<script src="assets/js/lessons/qm4-lessons.js?v=8aa5cf47a1de"></script>
+<script src="assets/js/renderers/qm4-renderer.js?v=5b18e71448d6"></script>
+<script src="assets/js/physics/qm5-physics.js?v=a540bf46dcef"></script>
+<script src="assets/js/lessons/qm5-lessons.js?v=d10947f1457c"></script>
+<script src="assets/js/renderers/qm5-renderer.js?v=f0411d2de55d"></script>
+<script src="assets/js/physics/qm6-physics.js?v=da3bfe98d958"></script>
+<script src="assets/js/lessons/qm6-lessons.js?v=ff3c9c5bca1e"></script>
+<script src="assets/js/renderers/qm6-renderer.js?v=59d6a9fb15ea"></script>
+<script src="assets/js/physics/qm7-physics.js?v=6c571a25f398"></script>
+<script src="assets/js/lessons/qm7-lessons.js?v=0a477b0cc077"></script>
+<script src="assets/js/renderers/qm7-renderer.js?v=ff16b26abf05"></script>
+<script src="assets/js/physics/qm8-physics.js?v=19b034dd9ab2"></script>
+<script src="assets/js/lessons/qm8-lessons.js?v=453d8b657d11"></script>
+<script src="assets/js/renderers/qm8-renderer.js?v=6fbcf473b073"></script>
+<script src="assets/js/physics/cm1-physics.js?v=657d4614aa06"></script>
+<script src="assets/js/lessons/cm1-lessons.js?v=e43ebd49b9f5"></script>
+<script src="assets/js/renderers/cm1-renderer.js?v=5162e3b32667"></script>
+<script src="assets/js/physics/cm2-physics.js?v=adf457c91ab0"></script>
+<script src="assets/js/lessons/cm2-lessons.js?v=388639641cd0"></script>
+<script src="assets/js/renderers/cm2-renderer.js?v=1a9a6c505658"></script>
+<script src="assets/js/physics/cm3-physics.js?v=4680ea5f4107"></script>
+<script src="assets/js/lessons/cm3-lessons.js?v=905d7c0b3175"></script>
+<script src="assets/js/renderers/cm3-renderer.js?v=e005466e0ac5"></script>
+<script src="assets/js/physics/cm4-physics.js?v=84397dacd1b5"></script>
+<script src="assets/js/lessons/cm4-lessons.js?v=7cdfa3fc09cd"></script>
+<script src="assets/js/renderers/cm4-renderer.js?v=328bb35dbe59"></script>
+<script src="assets/js/physics/cm5-physics.js?v=5d06707039d8"></script>
+<script src="assets/js/lessons/cm5-lessons.js?v=6fe7458a36e2"></script>
+<script src="assets/js/renderers/cm5-renderer.js?v=ef7b4f04394d"></script>
+<script src="assets/js/physics/cm6-physics.js?v=923c7dec1391"></script>
+<script src="assets/js/lessons/cm6-lessons.js?v=1dffc4480dbd"></script>
+<script src="assets/js/renderers/cm6-renderer.js?v=a36d9b1db090"></script>
+<script src="assets/js/physics/cm7-physics.js?v=c4828439b577"></script>
+<script src="assets/js/lessons/cm7-lessons.js?v=ffda876f7cb4"></script>
+<script src="assets/js/renderers/cm7-renderer.js?v=a0eabee4424d"></script>
+<script src="assets/js/physics/cm8-physics.js?v=a4c2d134a1fc"></script>
+<script src="assets/js/lessons/cm8-lessons.js?v=278a405a1fcf"></script>
+<script src="assets/js/renderers/cm8-renderer.js?v=9712ce44d343"></script>
+<script src="assets/js/physics/ts1-physics.js?v=4b2fe51177d7"></script>
+<script src="assets/js/lessons/ts1-lessons.js?v=6b0d0be979ff"></script>
+<script src="assets/js/renderers/ts1-renderer.js?v=c66615e2ba1a"></script>
+<script src="assets/js/physics/ts2-physics.js?v=be95cd809a2e"></script>
+<script src="assets/js/lessons/ts2-lessons.js?v=0067e1158cab"></script>
+<script src="assets/js/renderers/ts2-renderer.js?v=c044e0a89178"></script>
+<script src="assets/js/physics/ts3-physics.js?v=211112665cb5"></script>
+<script src="assets/js/lessons/ts3-lessons.js?v=b716a043bb93"></script>
+<script src="assets/js/renderers/ts3-renderer.js?v=d68c4a60aabc"></script>
+<script src="assets/js/physics/ts4-physics.js?v=503c24bc72b0"></script>
+<script src="assets/js/lessons/ts4-lessons.js?v=74dcccb9b868"></script>
+<script src="assets/js/renderers/ts4-renderer.js?v=8b46b886e66c"></script>
+<script src="assets/js/physics/ts5-physics.js?v=076c82c50839"></script>
+<script src="assets/js/lessons/ts5-lessons.js?v=d52a3c656863"></script>
+<script src="assets/js/renderers/ts5-renderer.js?v=4956dc89f2fb"></script>
+<script src="assets/js/physics/ts6-physics.js?v=779a12909d7c"></script>
+<script src="assets/js/lessons/ts6-lessons.js?v=3dca2e2cf6bb"></script>
+<script src="assets/js/renderers/ts6-renderer.js?v=914996ccae27"></script>
+<script src="assets/js/physics/ts7-physics.js?v=2fd25720afec"></script>
+<script src="assets/js/lessons/ts7-lessons.js?v=dfca91edead8"></script>
+<script src="assets/js/renderers/ts7-renderer.js?v=647c7e82dd30"></script>
+<script src="assets/js/physics/ts8-physics.js?v=cc8b198c400a"></script>
+<script src="assets/js/lessons/ts8-lessons.js?v=9522aefbf1c6"></script>
+<script src="assets/js/renderers/ts8-renderer.js?v=e06e07053fff"></script>
 <script src="assets/js/course-map.js?v=39afa2158b42"></script>
-<script src="assets/js/app.js?v=2cf92fb246b3"></script>
+<script src="assets/js/quantum-course-map.js?v=9fd6e72413f9"></script>
+<script src="assets/js/mechanics-course-map.js?v=e32f9bb6a181"></script>
+<script src="assets/js/thermal-course-map.js?v=099ad4306da3"></script>
+<script src="assets/js/app.js?v=d343e12f4d9f"></script>
 </body>
 </html>

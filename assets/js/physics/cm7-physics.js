@@ -1,0 +1,25 @@
+/* CM7: SI models unless the displayed axes explicitly define reduced units.
+ * Each function validates domains; undefined branches remain null, never zero.
+ */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.CM7Physics=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+
+  'use strict';
+  const PI=Math.PI;
+  function finite(...xs){if(!xs.every(Number.isFinite))throw new RangeError('Inputs must be finite.');}
+  function positive(...xs){finite(...xs);if(xs.some(x=>x<=0))throw new RangeError('Positive values required.');}
+  function bounded(x,a,b){finite(x);if(x<a||x>b)throw new RangeError('Input outside model domain.');}
+  const sq=x=>x*x;
+  const graph=(title,x,y,lo,hi,series,options)=>({title,x,y,lo,hi,series,options});
+  const series=(label,fn)=>({label,fn});
+  function pack(raw,metrics,rows,plots,notice='解析模型；无平滑、无随机采样。'){return {...raw,metrics,rows,plots,notice};}
+  function rk4(rhs,y0,tmax,n=1200){positive(tmax,n);const h=tmax/n,rows=[[0,...y0]];let y=y0.slice();for(let i=0;i<n;i++){const t=i*h,k1=rhs(t,y),k2=rhs(t+h/2,y.map((v,j)=>v+h*k1[j]/2)),k3=rhs(t+h/2,y.map((v,j)=>v+h*k2[j]/2)),k4=rhs(t+h,y.map((v,j)=>v+h*k3[j]));y=y.map((v,j)=>v+h*(k1[j]+2*k2[j]+2*k3[j]+k4[j])/6);rows.push([(i+1)*h,...y]);}return rows;}
+  function sample(rows,col,x){const h=rows[1][0]-rows[0][0],z=Math.max(0,Math.min(rows.length-1,x/h)),i=Math.min(rows.length-2,Math.floor(z)),f=z-i;return rows[i][col]*(1-f)+rows[i+1][col]*f;}
+
+  function bracket(m,omega,q,p,kind){positive(m,omega);finite(q,p);if(![0,1,2,3].includes(kind))throw new RangeError('Unknown polynomial.');const F=kind===0?(q,p)=>q:kind===1?(q,p)=>p:kind===2?(q,p)=>q*p:(q,p)=>p*p/(2*m)+.5*m*omega**2*q*q,dfq=kind===0?1:kind===1?0:kind===2?p:m*omega*omega*q,dfp=kind===0?0:kind===1?1:kind===2?q:p/m,value=dfq*p/m-dfp*m*omega*omega*q,E=p*p/(2*m)+.5*m*omega*omega*q*q,qT=t=>q*Math.cos(omega*t)+p/(m*omega)*Math.sin(omega*t),pT=t=>p*Math.cos(omega*t)-m*omega*q*Math.sin(omega*t),units=['m/s','N','J','J/s'][kind];return pack({value,F,E},[['{F,H} ['+units+']',value],['F选择',['q [m]','p [kg·m/s]','qp [J·s]','H [J]'][kind]],['该F是否对所有态守恒',kind===3?'是':'否；某点导数为零不足以断言守恒']],[['括号约定','{F,G}=∂qF ∂pG−∂pF ∂qG，{q,p}=+1'],['总导数','F无显含t时dF/dt={F,H}；本模型H=p²/(2m)+mω²q²/2'],['量纲','F与H的括号单位为[F]/s，不能一概标成无量纲']],[graph('独立沿解析轨迹求F','t [s]',['F [m]','F [kg·m/s]','F [J·s]','F [J]'][kind],0,4*PI/omega,[series('F(q(t),p(t))',t=>F(qT(t),pT(t)))]),graph('括号在相空间不同点','q [m]','{F,H} ['+units+']',-2,2,[series('固定p扫q',x=>kind===0?p/m:kind===1?-m*omega*omega*x:kind===2?p*p/m-m*omega*omega*x*x:0)])]);}
+  function canonical(a,q,p,kind){positive(a);finite(q,p);if(![0,1].includes(kind))throw new RangeError('Unknown scaling.');const factor=kind===0?1/a:a,Q=a*q,P=factor*p,det=a*factor;return pack({Q,P,det,bracket:det},[['Q [m]',Q],['P [kg·m/s]',P],['{Q,P}',det]],[['变换',kind===0?'Q=a q，P=p/a（正则）':'Q=a q，P=a p（一般不正则；a=1为恒等）'],['初始单位相面积 [J·s]',PI],['映射后相面积 [J·s]',det*PI],['辛条件','本例一对变量且线性，det=1等价于辛；多对变量不能仅用det=1判断']],[graph('同一圆边界的Q分量','u [rad]','Q [m]',0,2*PI,[series('q=cosu',u=>Math.cos(u)),series('Q',u=>a*Math.cos(u))]),graph('同一圆边界的P分量','u [rad]','P [kg·m/s]',0,2*PI,[series('p=sinu',u=>Math.sin(u)),series('P',u=>factor*Math.sin(u))])]);}
+  function actionAngle(m,omega,E,phi){positive(m,omega);bounded(E,0,10);finite(phi);const J=E/omega,A=Math.sqrt(2*J/(m*omega)),B=Math.sqrt(2*m*omega*J),q=A*Math.sin(phi),p=B*Math.cos(phi);return pack({J,A,B,q,p,area:2*PI*J},[['作用量 J [J·s]',J],['当前q [m]',q],['当前p [kg·m/s]',p]],[['约定','J=(1/2π)∮p dq=E/ω，q=√(2J/mω)sinφ，p=√(2mωJ)cosφ'],['哈密顿量','H=ωJ；φ̇=ω、J̇=0；{φ,J}=1'],['E=0边界',E===0?'角变量在原点未定义；当前φ仅为参数标签':'J>0，角变量按2π周期识别'],['椭圆相面积 [J·s]',2*PI*J]],[graph('固定J，角变量匀速前进','Δt [s]','q [m]',0,4*PI/omega,[series('q(φ+ωt)',t=>A*Math.sin(phi+omega*t))]),graph('两支椭圆与作用量','q [m]','p [kg·m/s]',-Math.max(A,.01),Math.max(A,.01),[series('正p支',x=>A>0&&Math.abs(x)<=A?B*Math.sqrt(Math.max(0,1-x*x/(A*A))):null),series('负p支',x=>A>0&&Math.abs(x)<=A?-B*Math.sqrt(Math.max(0,1-x*x/(A*A))):null)])]);}
+  function hj(m,P,Q,time,q){positive(m);finite(P,Q,time,q);const S=(x,t)=>P*x-P*P*t/(2*m),trajectory=t=>Q+P*t/m,residual=-P*P/(2*m)+P*P/(2*m);return pack({S,trajectory,p:P,constant:q-P*time/m,residual},[['S(q,t) [J·s]',S(q,time)],['∂qS=p [kg·m/s]',P],['HJ方程残差 [J]',residual]],[['完整积分','S(q,P,t)=Pq−P²t/(2m)；Q=∂P S=q−Pt/m'],['由常量还原轨迹','q(t)=Q+Pt/m；P和Q为相互独立积分常量'],['选定时刻轨迹位置 [m]',trajectory(time)],['当前(q,t)推得Q [m]',q-P*time/m],['边界','自由粒子，无势；改变P比较不同匀速解，不是在施加加速度']],[graph('作用函数的空间斜率给动量','q [m]','S(q,t) [J·s]',q-2,q+2,[series('固定时刻S',x=>S(x,time))]),graph('完整积分还原真实轨迹','t [s]','q [m]',0,5,[series('Q+Pt/m',trajectory)])]);}
+  function evaluate(id,p){Object.values(p).forEach(x=>finite(x));switch(id){case 'CM7.1':return bracket(p.m,p.omega,p.q,p.p,p.kind);case 'CM7.2':return canonical(p.a,p.q,p.p,p.kind);case 'CM7.3':return actionAngle(p.m,p.omega,p.E,p.phi);case 'CM7.4':return hj(p.m,p.P,p.Q,p.time,p.q);default:throw new RangeError('Unknown CM7 lesson.');}}
+  return {evaluate,bracket,canonical,actionAngle,hj};
+
+});

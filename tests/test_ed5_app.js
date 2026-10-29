@@ -5,7 +5,7 @@ const lessons=require('../assets/js/lessons/ed5-lessons.js');
 const initial={lessons:{mechanics:{predict:true,derive:true,note:'原单摆记录'},electro:{predict:true,derive:true,note:'原高斯记录'},'ED2.3':{predict:true,derive:false,note:'ED2 保留'}}};
 const app=boot(initial);
 function button(node,key,value){const b=node.querySelectorAll('[data-'+key+']').find(e=>e.attrs['data-'+key]===value);assert.ok(b,'Missing '+key+'='+value);return b;}
-assert.equal(app.node('progressText').textContent,'2 / 35');assert.equal(app.node('xpText').textContent,'250');
+assert.equal(app.node('progressText').textContent,'2 / 128');assert.equal(app.node('xpText').textContent,'250');
 button(app.node('courseNav'),'course','electro').click();
 assert.ok(app.node('electroMap').textContent.includes('32 个已有示范'));
 button(app.node('electroMap'),'module','ED5').click();
@@ -41,7 +41,7 @@ for(const lesson of lessons){
  }
  app.node('reflection').value=lesson.id+' 检查笔记';app.node('saveNoteBtn').click();
 }
-assert.equal(app.node('progressText').textContent,'6 / 35');assert.equal(app.node('xpText').textContent,'650');
+assert.equal(app.node('progressText').textContent,'6 / 128');assert.equal(app.node('xpText').textContent,'650');
 for(const key of Object.keys(initial.lessons))assert.deepEqual(app.snapshot().lessons[key],initial.lessons[key]);
 const recordsBeforeExploring=app.serialized();
 function setControl(id,value){const e=app.node('slider-'+id);e.value=value;e.fire('input');}
@@ -55,9 +55,9 @@ setControl('ratio',1.1);assert.ok(app.node('metrics').textContent.includes('传�
 assert.equal(app.serialized(),recordsBeforeExploring,'Browsing and changing controls must not write learning records.');
 app.node('exportBtn').click();
 for(const lesson of lessons)assert.ok(app.blobs[0].includes(lesson.id+' 检查笔记'));
-assert.ok(app.blobs[0].includes('原高斯记录'));assert.ok(app.blobs[0].includes('6/35'));
+assert.ok(app.blobs[0].includes('原高斯记录'));assert.ok(app.blobs[0].includes('6/128'));
 const reload=boot(app.snapshot(),{theme:app.theme()});
-assert.equal(reload.node('progressText').textContent,'6 / 35');assert.equal(reload.node('xpText').textContent,'650');
+assert.equal(reload.node('progressText').textContent,'6 / 128');assert.equal(reload.node('xpText').textContent,'650');
 button(reload.node('courseNav'),'course','electro').click();button(reload.node('electroMap'),'module','ED5').click();
 assert.equal(reload.node('electroMap').querySelectorAll('.available').filter(e=>e.textContent==='示范题完成').length,4);
 openLesson(reload,'ED5.3');assert.equal(reload.node('reflection').value,'ED5.3 检查笔记');
