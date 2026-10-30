@@ -20,6 +20,52 @@ function open(app,course,id){
   choose(app.node(course.map),'module',id.split('.')[0]);
   choose(app.node(course.map),'openLesson',id);
 }
+function checkGraphLaunchers(app,course){
+  const node=app.node,root=node(course.map);
+  const data=require('../assets/js/data/'+({mechanics:'mechanics',thermal:'thermal',electro:'electrodynamics'}[course.id])+'-curriculum.js');
+  const before=app.serialized();
+  assert.equal(root.querySelectorAll('.map-graph-lesson').length,0,'Initially no module is expanded');
+  for(const module of data.modules){
+    const id=module.id;
+    node(course.id+'GraphNode-'+id).click();
+    assert.equal(app.document.activeElement,node(course.id+'GraphNode-'+id));
+    assert.equal(node(course.id+'GraphNode-'+id).getAttribute('aria-expanded'),'true');
+    const panel=node(course.id+'GraphLessons-'+id);
+    assert.equal(panel.hidden,false);
+    assert.equal(panel.querySelectorAll('[data-open-lesson]').length,4);
+    assert.equal(root.querySelectorAll('.map-graph-lesson').length,4,'Only one module exposes launchers');
+    const left=Number(panel.getAttribute('style').match(/left:([\d.-]+)px/)[1]);
+    assert.ok(left>=0&&left+240<=840,'Expansion must remain within the scrollable graph');
+    assert.equal(root.querySelector('.map-detail').querySelectorAll('[data-open-lesson]').length,0,'Design text must not duplicate launchers');
+    for(const lesson of module.lessons){
+      const launcher=panel.querySelectorAll('[data-open-lesson]').find(b=>b.dataset.openLesson===lesson.id);
+      assert.ok(launcher.textContent.includes(lesson.title));
+      // Re-query after returning: refreshing a map replaces its DOM buttons.
+      choose(node(course.id+'GraphLessons-'+id),'openLesson',lesson.id);
+      assert.equal(node(course.map).hidden,true);
+      assert.equal(node('lessonLayout').hidden,false);
+      const implementation=require(`../assets/js/lessons/${course.prefix.toLowerCase()}${id.slice(2)}-lessons.js`).find(l=>l.id===lesson.implementationId);
+      const expected=implementation?.title||(lesson.id==='ED1.2'?'从电场线到高斯定律':null);
+      assert.ok(expected,'Expected implementation for '+lesson.id);
+      assert.equal(node('lessonTitle').textContent,expected,'Correct demo for '+lesson.id);
+      node(course.tabs[0]).click();
+      assert.equal(node(course.id+'GraphLessons-'+id).hidden,false);
+    }
+    node(course.id+'GraphScroll').scrollTop=120;
+    node(course.id+'GraphScroll').scrollLeft=25;
+    node(course.id+'GraphNode-'+id).click();
+    assert.equal(node(course.id+'GraphLessons-'+id).hidden,true);
+    assert.equal(node(course.id+'GraphNode-'+id).getAttribute('aria-expanded'),'false');
+    assert.equal(app.document.activeElement,node(course.id+'GraphNode-'+id));
+    assert.equal(node(course.id+'GraphScroll').scrollTop,120);
+    assert.equal(node(course.id+'GraphScroll').scrollLeft,25);
+    // The module index also opens the four graph launchers, like quantum.
+    choose(node(course.map),'module',id);
+    assert.equal(node(course.id+'GraphLessons-'+id).hidden,false);
+    assert.equal(app.document.activeElement,node(course.id==='electro'?'moduleDetailTitle':course.id+'ModuleDetailTitle'));
+  }
+  assert.equal(app.serialized(),before,'Opening every demo must not write learning progress');
+}
 for(const theme of ['day','night']){
   const initial={lessons:{mechanics:{predict:true,derive:false,note:'原单摆'},thermal:{predict:false,derive:true,note:'原两能级'},electro:{predict:true,derive:true,note:'原高斯面'},quantum:{predict:true,derive:false,note:'原势阱'}}};
   const app=boot(initial,{theme}),node=app.node,unchanged=app.serialized();
@@ -30,6 +76,7 @@ for(const theme of ['day','night']){
     for(const other of courses){assert.equal(node(other.map).hidden,other!==course);assert.equal(node(other.glossary).hidden,true);}
     assert.equal(node('lessonLayout').hidden,true);
     assert.equal(node(course.tabs[0]).getAttribute('aria-selected'),'true');
+    if(course.id!=='quantum')checkGraphLaunchers(app,course);
     open(app,course,course.old);
     assert.equal(node('reflection').value,initial.lessons[course.id].note);
     const firstControl=node('controls').querySelectorAll('input')[0]||node('controls').querySelectorAll('select')[0];

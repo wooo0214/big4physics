@@ -99,6 +99,7 @@ function bootMap(progress=()=>({})){
     addEventListener(type,fn){this.events[type]=fn;}
     click(){this.events.click?.({preventDefault(){}});}
     focus(){document.activeElement=this;}
+    scrollIntoView(){}
   }
   const mount=new Element('div',{id:'mechanicsMap'});
   document={activeElement:null,getElementById(id){return id==='mechanicsMap'?mount:mount.querySelectorAll('[id]').find(x=>x.id===id)||null;}};
@@ -115,8 +116,10 @@ const map=bootMap(id=>id==='CM2.2'?{predict:true,derive:true}:{});
 const click=(key,value)=>{const node=map.mount.querySelectorAll('[data-'+key+']').find(n=>n.attrs['data-'+key]===value);assert.ok(node,key+'='+value);node.click();};
 assert.ok(map.mount.innerHTML.includes('32 个关卡设计 · 32 个已有示范'));
 assert.ok(map.mount.innerHTML.includes('开始 CM1.1'));
-assert.ok(map.mount.innerHTML.includes('原单摆示范 CM2.2'));
-click('open-lesson','CM1.1');click('open-lesson','CM2.2');
+const headingActions=map.mount.innerHTML.match(/<div class="map-actions">([\s\S]*?)<\/div>/)[1];
+assert.equal((headingActions.match(/data-open-lesson=/g)||[]).length,1);
+assert.ok(!headingActions.includes('CM2.2'));
+click('open-lesson','CM1.1');click('module','CM2');click('open-lesson','CM2.2');
 assert.deepEqual(map.opened,['CM1.1','CM2.2']);
 for(const m of modules.values()){
   click('module',m.id);

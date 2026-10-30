@@ -84,6 +84,7 @@ for(const theme of ['day','night']){
   assert.equal(node('quantumTools').getAttribute('aria-label'),'量子力学视图');
   assert.ok(node('quantumMap').textContent.includes('32 个关卡设计 · 32 个已有示范'));
   assert.equal(node('progressText').textContent,'1 / 128');assert.equal(node('xpText').textContent,'150');
+  assert.equal(node('quantumMap').querySelectorAll('.quantum-graph-lesson').length,0);
   for(const m of data.modules){
     byData(node('quantumMap'),'module',m.id).click();
     assert.equal(app.document.activeElement,node('quantumModuleDetailTitle'));
@@ -91,8 +92,34 @@ for(const theme of ['day','night']){
       const row=node('lesson-'+l.id);
       assert.ok(row.textContent.includes(l.model));
       assert.ok(row.textContent.includes(l.graduateTask));
-      assert.equal(row.querySelectorAll('[data-open-lesson]').length,l.status==='available'?1:0);
+      assert.equal(row.querySelectorAll('[data-open-lesson]').length,0);
     }
+    const panel=node('quantumGraphLessons-'+m.id);
+    assert.equal(panel.hidden,false);
+    assert.equal(panel.querySelectorAll('[data-open-lesson]').length,4);
+    assert.equal(node('quantumMap').querySelectorAll('.quantum-graph-lesson').length,4);
+    assert.equal(node('quantumGraphNode-'+m.id).getAttribute('aria-expanded'),'true');
+    for(const l of m.lessons){
+      const launcher=byData(panel,'open-lesson',l.id);
+      assert.ok(launcher.textContent.includes(l.title));
+      launcher.click();
+      assert.equal(node('quantumMap').hidden,true);
+      assert.equal(node('lessonLayout').hidden,false);
+      const lesson=require('../assets/js/lessons/qm'+m.id.slice(2)+'-lessons.js').find(item=>item.mapId===l.id);
+      assert.equal(node('lessonTitle').textContent,lesson.title);
+      node('quantumMapViewBtn').click();
+    }
+    // Graph selection keeps keyboard focus and the user's scroll position.
+    node('quantumGraphScroll').scrollTop=120;
+    node('quantumGraphScroll').scrollLeft=25;
+    node('quantumGraphNode-'+m.id).click();
+    assert.equal(node('quantumGraphLessons-'+m.id).hidden,true);
+    assert.equal(node('quantumGraphNode-'+m.id).getAttribute('aria-expanded'),'false');
+    assert.equal(app.document.activeElement,node('quantumGraphNode-'+m.id));
+    assert.equal(node('quantumGraphScroll').scrollTop,120);
+    assert.equal(node('quantumGraphScroll').scrollLeft,25);
+    node('quantumGraphNode-'+m.id).click();
+    assert.equal(node('quantumGraphLessons-'+m.id).hidden,false);
   }
   byData(node('quantumMap'),'module','QM7').click();
   byData(node('quantumMap'),'prerequisite','QM4.1').click();

@@ -30,3 +30,19 @@
 .graduate-task{border-top:1px solid var(--line);margin-top:13px;padding-top:13px}
 .graduate-task details{margin:10px 0}
 @media(max-width:700px){.electro-tab{font-size:12px;padding:12px 8px}.glossary-modules{grid-template-columns:repeat(2,minmax(0,1fr))}.glossary-heading h2{font-size:20px}}
+
+/* Quantum map: one expanded module exposes its four lesson launchers. */
+#quantumMap .quantum-graph-lessons{position:absolute;box-sizing:border-box;width:240px;height:316px;padding:10px;display:grid;grid-template-rows:repeat(4,68px);gap:8px;border:1px solid var(--accent);border-radius:11px;background:var(--panel);z-index:1}
+#quantumMap .quantum-graph-lessons[hidden]{display:none}
+#quantumMap .quantum-graph-lesson{box-sizing:border-box;width:100%;height:68px;padding:8px 10px;text-align:center;white-space:nowrap;line-height:1.5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+#quantumMap .quantum-graph-lesson small{display:block;font-size:15px;color:var(--accent)}
+#quantumMap .quantum-graph-lesson>span{font-size:15px}
+#quantumMap .map-node small>span{float:right}
+
+/* Other course maps use the same four-lesson expansion as the quantum map. */
+.course-map .map-graph-lessons{position:absolute;box-sizing:border-box;width:240px;height:316px;padding:10px;display:grid;grid-template-rows:repeat(4,68px);gap:8px;border:1px solid var(--accent);border-radius:11px;background:var(--panel);z-index:1}
+.course-map .map-graph-lessons[hidden]{display:none}
+.course-map .map-graph-lesson{box-sizing:border-box;width:100%;height:68px;padding:8px 10px;text-align:center;white-space:nowrap;line-height:1.5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.course-map .map-graph-lesson small{display:block;font-size:15px;color:var(--accent)}
+.course-map .map-graph-lesson>span{font-size:15px}
+.course-map .map-node small>span{float:right}

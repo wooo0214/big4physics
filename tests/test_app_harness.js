@@ -91,8 +91,9 @@ function openLesson(app,id){
   const mount=app.node('electroMap');
   const moduleButton=mount.querySelectorAll('[data-module]').find(e=>e.dataset.module===id.split('.')[0]);
   assert.ok(moduleButton,'Missing module for '+id);moduleButton.click();
-  const lesson=app.node('lesson-'+id);lesson.open=true;
-  const button=lesson.querySelectorAll('[data-open-lesson]').find(e=>e.dataset.openLesson===id);
+  const panel=app.node('electroGraphLessons-'+id.split('.')[0]);
+  assert.equal(panel.hidden,false,'Module selection must expose its graph launchers');
+  const button=panel.querySelectorAll('[data-open-lesson]').find(e=>e.dataset.openLesson===id);
   assert.ok(button,'Missing map launcher '+id);button.click();
 }
 

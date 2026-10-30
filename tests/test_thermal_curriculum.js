@@ -58,13 +58,14 @@ class MapElement{
  addEventListener(k,fn){this.events[k]=fn;}
  click(){this.events.click?.({preventDefault(){}});}
  focus(){active=this;}
+ scrollIntoView(){}
  querySelector(){return this.summary||(this.summary=new MapElement());}
 }
 const mount=new MapElement();
 let nodes=[];
 Object.defineProperty(mount,'innerHTML',{get(){return this.html;},set(html){
  this.html=html;nodes=[];
- for(const token of html.match(/<(?:button|a|h3|details|marker)\b[^>]*>/g)||[]){
+ for(const token of html.match(/<(?:button|a|h3|details|marker|div)\b[^>]*>/g)||[]){
   const attrs={};for(const match of token.matchAll(/([\w-]+)="([^"]*)"/g))attrs[match[1]]=match[2];nodes.push(new MapElement(attrs));
  }
 }});
@@ -77,6 +78,10 @@ const source=fs.readFileSync(path.join(__dirname,'../assets/js/thermal-course-ma
 vm.runInContext(source,context);
 const api=context.PhysicsQuestThermalMap;assert.ok(api);
 let opened=null;api.configure({onOpenLesson:id=>{opened=id;},getProgress:id=>({predict:id==='TS5.1',derive:id==='TS5.1'})});
+const headingActions=mount.innerHTML.match(/<div class="map-actions">([\s\S]*?)<\/div>/)[1];
+assert.equal((headingActions.match(/data-open-lesson=/g)||[]).length,1);
+assert.ok(headingActions.includes('TS1.1'));
+assert.ok(!headingActions.includes('TS5.1'));
 function choose(key,value){const b=mount.querySelectorAll('[data-'+key+']').find(n=>n.dataset[key.replace(/-([a-z])/g,(_,x)=>x.toUpperCase())]===value);assert.ok(b,key+' '+value);b.click();}
 for(const m of data.modules){
  choose('module',m.id);assert.equal(active.attrs.id,'thermalModuleDetailTitle');

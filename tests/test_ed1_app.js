@@ -14,7 +14,7 @@ assert.equal(app.node('electroMap').hidden,false);assert.equal(app.node('lessonL
 assert.ok(app.node('electroMap').textContent.includes('32 个已有示范'));
 // All map launchers use a stable lesson ID and route into the shared page.
 for(const id of ['ED1.1','ED1.2','ED1.3','ED1.4']){
-  app.node('mapViewBtn').click();byData(app.node('electroMap'),'open-lesson',id).click();
+  openLesson(app,id);
   assert.equal(app.node('electroMap').hidden,true);assert.equal(app.node('lessonLayout').hidden,false);
   assert.equal(app.node('demoViewBtn').getAttribute('aria-selected'),'true');
 }
